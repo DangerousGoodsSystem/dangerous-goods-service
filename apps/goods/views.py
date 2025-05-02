@@ -46,67 +46,51 @@ from .serializers import(
     DangerousGoodsSerializer,
 )
 
-"""
-UN Code ViewSet
-"""
 class UNCodeViewSet(viewsets.ViewSet):
     pagination_class = CustomPagination
     def list(self, request):
-        """
-        List all UN Codes
-        """
-        un_codes = UNCode.objects.filter(is_activate=True)
+        """List all UN Codes"""
+        un_codes = UNCode.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(un_codes, request)
         serializer = UNCodeSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data) 
     def retrieve(self, request, pk=None):
-        """
-        Retrieve a UN Code by its primary key
-        """
-        instance = get_object_or_404(UNCode, pk=pk, is_activate=True)
+        """Retrieve a UN Code by its primary key"""
+        instance = get_object_or_404(UNCode, pk=pk, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
     def get_by_code(self, request):
-        """
-        Retrieve a UN Code by its code
-        """
+        """Retrieve a UN Code by its code"""
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
-        """
-        Create a new UN Code
-        """
-        serializer = UNCodeSerializer(data=request.data)
+        """Create a new UN Code"""
+        data = request.data
+        many = isinstance(data, list)
+        serializer = UNCodeSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     def partial_update(self, request, pk=None):
-        """
-        Partially update a UN Code
-        """
-        instance = get_object_or_404(UNCode, pk=pk, is_activate=True)
+        """Partially update a UN Code"""
+        instance = get_object_or_404(UNCode, pk=pk, activate=True)
         serializer = UNCodeSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     def destroy(self, request, pk=None):
-        """
-        Delete a UN Code
-        """
-        instance = get_object_or_404(UNCode, pk=pk, is_activate=True)
-        instance.is_activate = False
+        """Delete a UN Code"""
+        instance = get_object_or_404(UNCode, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-"""
-Classification ViewSet
-"""
 class ClassificationViewSet(viewsets.ViewSet):
     pagination_class = CustomPagination
 
@@ -114,7 +98,7 @@ class ClassificationViewSet(viewsets.ViewSet):
         """
         List all Classifications
         """
-        classifications = Classification.objects.filter(is_activate=True)
+        classifications = Classification.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(classifications, request)
         serializer = ClassificationSerializer(page, many=True)
@@ -123,22 +107,24 @@ class ClassificationViewSet(viewsets.ViewSet):
         """
         Retrieve a Classification by its primary key
         """
-        instance = get_object_or_404(Classification, pk=pk, is_activate=True)
+        instance = get_object_or_404(Classification, pk=pk, activate=True)
         serializer = ClassificationSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Classification
         """
-        serializer = ClassificationSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = ClassificationSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save() # single → ClassificationSerializer.create(); bulk → ListSerializer.create()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     def partial_update(self, request, pk=None):
         """
         Partially update a Classification
         """ 
-        instance = get_object_or_404(Classification, pk=pk, is_activate=True)
+        instance = get_object_or_404(Classification, pk=pk, activate=True)
         serializer = ClassificationSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -147,14 +133,11 @@ class ClassificationViewSet(viewsets.ViewSet):
         """
         Delete a Classification
         """
-        instance = get_object_or_404(Classification, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(Classification, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-"""
-Division ViewSet
-"""
 class DivisionViewSet(viewsets.ViewSet):
     pagination_class = CustomPagination
 
@@ -162,7 +145,7 @@ class DivisionViewSet(viewsets.ViewSet):
         """
         List all Divisions
         """
-        divisions = Division.objects.filter(is_activate=True)
+        divisions = Division.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(divisions, request)
         serializer = DivisionSerializer(page, many=True)
@@ -171,14 +154,16 @@ class DivisionViewSet(viewsets.ViewSet):
         """
         Retrieve a Division by its primary key
         """
-        instance = get_object_or_404(Division, pk=pk, is_activate=True)
+        instance = get_object_or_404(Division, pk=pk, activate=True)
         serializer = DivisionSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Division
         """
-        serializer = DivisionSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = DivisionSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -186,7 +171,7 @@ class DivisionViewSet(viewsets.ViewSet):
         """
         Partially update a Division
         """
-        instance = get_object_or_404(Division, pk=pk, is_activate=True)
+        instance = get_object_or_404(Division, pk=pk, activate=True)
         serializer = DivisionSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -195,8 +180,8 @@ class DivisionViewSet(viewsets.ViewSet):
         """
         Delete a Division
         """
-        instance = get_object_or_404(Division, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(Division, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -210,7 +195,7 @@ class CompatibilityGroupViewSet(viewsets.ViewSet):
         """
         List all Compatibility Groups
         """
-        compatibility_groups = CompatibilityGroup.objects.filter(is_activate=True)
+        compatibility_groups = CompatibilityGroup.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(compatibility_groups, request)
         serializer = CompatibilityGroupSerializer(page, many=True)
@@ -219,14 +204,16 @@ class CompatibilityGroupViewSet(viewsets.ViewSet):
         """
         Retrieve a Compatibility Group by its primary key
         """
-        instance = get_object_or_404(CompatibilityGroup, pk=pk, is_activate=True)
+        instance = get_object_or_404(CompatibilityGroup, pk=pk, activate=True)
         serializer = CompatibilityGroupSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Compatibility Group
         """
-        serializer = CompatibilityGroupSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = CompatibilityGroupSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -234,7 +221,7 @@ class CompatibilityGroupViewSet(viewsets.ViewSet):
         """
         Partially update a Compatibility Group
         """
-        instance = get_object_or_404(CompatibilityGroup, pk=pk, is_activate=True)
+        instance = get_object_or_404(CompatibilityGroup, pk=pk, activate=True)
         serializer = CompatibilityGroupSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -243,8 +230,8 @@ class CompatibilityGroupViewSet(viewsets.ViewSet):
         """
         Delete a Compatibility Group
         """
-        instance = get_object_or_404(CompatibilityGroup, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(CompatibilityGroup, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
@@ -258,7 +245,7 @@ class PackingGroupViewSet(viewsets.ViewSet):
         """
         List all Packing Groups
         """
-        packing_groups = PackingGroup.objects.filter(is_activate=True)
+        packing_groups = PackingGroup.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(packing_groups, request)
         serializer = PackingGroupSerializer(page, many=True)
@@ -267,7 +254,7 @@ class PackingGroupViewSet(viewsets.ViewSet):
         """
         Retrieve a Packing Group by its primary key
         """
-        instance = get_object_or_404(PackingGroup, pk=pk, is_activate=True)
+        instance = get_object_or_404(PackingGroup, pk=pk, activate=True)
         serializer = PackingGroupSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -278,14 +265,16 @@ class PackingGroupViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Packing Group
         """
-        serializer = PackingGroupSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = PackingGroupSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -293,7 +282,7 @@ class PackingGroupViewSet(viewsets.ViewSet):
         """
         Partially update a Packing Group
         """
-        instance = get_object_or_404(PackingGroup, pk=pk, is_activate=True)
+        instance = get_object_or_404(PackingGroup, pk=pk, activate=True)
         serializer = PackingGroupSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -302,8 +291,8 @@ class PackingGroupViewSet(viewsets.ViewSet):
         """
         Delete a Packing Group
         """
-        instance = get_object_or_404(PackingGroup, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(PackingGroup, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -317,7 +306,7 @@ class SpecialProvisionsViewSet(viewsets.ViewSet):
         """
         List all Special Provisions
         """
-        special_provisions = SpecialProvisions.objects.filter(is_activate=True)
+        special_provisions = SpecialProvisions.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(special_provisions, request)
         serializer = SpecialProvisionsSerializer(page, many=True)
@@ -326,7 +315,7 @@ class SpecialProvisionsViewSet(viewsets.ViewSet):
         """
         Retrieve a Special Provision by its primary key
         """
-        instance = get_object_or_404(SpecialProvisions, pk=pk, is_activate=True)
+        instance = get_object_or_404(SpecialProvisions, pk=pk, activate=True)
         serializer = SpecialProvisionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -337,14 +326,16 @@ class SpecialProvisionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Special Provision
         """
-        serializer = SpecialProvisionsSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = SpecialProvisionsSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -352,7 +343,7 @@ class SpecialProvisionsViewSet(viewsets.ViewSet):
         """
         Partially update a Special Provision
         """
-        instance = get_object_or_404(SpecialProvisions, pk=pk, is_activate=True)
+        instance = get_object_or_404(SpecialProvisions, pk=pk, activate=True)
         serializer = SpecialProvisionsSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -361,8 +352,8 @@ class SpecialProvisionsViewSet(viewsets.ViewSet):
         """
         Delete a Special Provision
         """
-        instance = get_object_or_404(SpecialProvisions, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(SpecialProvisions, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -376,7 +367,7 @@ class ExceptedQuantitiesViewSet(viewsets.ViewSet):
         """
         List all Excepted Quantities
         """
-        excepted_quantities = ExceptedQuantities.objects.filter(is_activate=True)
+        excepted_quantities = ExceptedQuantities.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(excepted_quantities, request)
         serializer = ExceptedQuantitiesSerializer(page, many=True)
@@ -385,7 +376,7 @@ class ExceptedQuantitiesViewSet(viewsets.ViewSet):
         """
         Retrieve an Excepted Quantity by its primary key
         """
-        instance = get_object_or_404(ExceptedQuantities, pk=pk, is_activate=True)
+        instance = get_object_or_404(ExceptedQuantities, pk=pk, activate=True)
         serializer = ExceptedQuantitiesSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -396,14 +387,16 @@ class ExceptedQuantitiesViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Excepted Quantity
         """
-        serializer = ExceptedQuantitiesSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = ExceptedQuantitiesSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -411,7 +404,7 @@ class ExceptedQuantitiesViewSet(viewsets.ViewSet):
         """
         Partially update an Excepted Quantity
         """
-        instance = get_object_or_404(ExceptedQuantities, pk=pk, is_activate=True)
+        instance = get_object_or_404(ExceptedQuantities, pk=pk, activate=True)
         serializer = ExceptedQuantitiesSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -420,8 +413,8 @@ class ExceptedQuantitiesViewSet(viewsets.ViewSet):
         """
         Delete an Excepted Quantity
         """
-        instance = get_object_or_404(ExceptedQuantities, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(ExceptedQuantities, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -435,7 +428,7 @@ class PackingInstructionsViewSet(viewsets.ViewSet):
         """
         List all Packing Instructions
         """
-        packing_instructions = PackingInstructions.objects.filter(is_activate=True)
+        packing_instructions = PackingInstructions.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(packing_instructions, request)
         serializer = PackingInstructionsSerializer(page, many=True)
@@ -444,7 +437,7 @@ class PackingInstructionsViewSet(viewsets.ViewSet):
         """
         Retrieve a Packing Instruction by its primary key
         """
-        instance = get_object_or_404(PackingInstructions, pk=pk, is_activate=True)
+        instance = get_object_or_404(PackingInstructions, pk=pk, activate=True)
         serializer = PackingInstructionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -455,14 +448,16 @@ class PackingInstructionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Packing Instruction
         """
-        serializer = PackingInstructionsSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = PackingInstructionsSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -470,7 +465,7 @@ class PackingInstructionsViewSet(viewsets.ViewSet):
         """
         Partially update a Packing Instruction
         """
-        instance = get_object_or_404(PackingInstructions, pk=pk, is_activate=True)
+        instance = get_object_or_404(PackingInstructions, pk=pk, activate=True)
         serializer = PackingInstructionsSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -479,8 +474,8 @@ class PackingInstructionsViewSet(viewsets.ViewSet):
         """
         Delete a Packing Instruction
         """
-        instance = get_object_or_404(PackingInstructions, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(PackingInstructions, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -494,7 +489,7 @@ class PackingProvisionsViewSet(viewsets.ViewSet):
         """
         List all Packing Provisions
         """
-        packing_provisions = PackingProvisions.objects.filter(is_activate=True)
+        packing_provisions = PackingProvisions.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(packing_provisions, request)
         serializer = PackingProvisionsSerializer(page, many=True)
@@ -503,7 +498,7 @@ class PackingProvisionsViewSet(viewsets.ViewSet):
         """
         Retrieve a Packing Provision by its primary key
         """
-        instance = get_object_or_404(PackingProvisions, pk=pk, is_activate=True)
+        instance = get_object_or_404(PackingProvisions, pk=pk, activate=True)
         serializer = PackingProvisionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -514,14 +509,16 @@ class PackingProvisionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Packing Provision
         """
-        serializer = PackingProvisionsSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = PackingProvisionsSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -529,7 +526,7 @@ class PackingProvisionsViewSet(viewsets.ViewSet):
         """
         Partially update a Packing Provision
         """
-        instance = get_object_or_404(PackingProvisions, pk=pk, is_activate=True)
+        instance = get_object_or_404(PackingProvisions, pk=pk, activate=True)
         serializer = PackingProvisionsSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -538,8 +535,8 @@ class PackingProvisionsViewSet(viewsets.ViewSet):
         """
         Delete a Packing Provision
         """
-        instance = get_object_or_404(PackingProvisions, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(PackingProvisions, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -553,7 +550,7 @@ class IBCInstructionsViewSet(viewsets.ViewSet):
         """
         List all IBC Instructions
         """
-        ibc_instructions = IBCInstructions.objects.filter(is_activate=True)
+        ibc_instructions = IBCInstructions.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(ibc_instructions, request)
         serializer = IBCInstructionsSerializer(page, many=True)
@@ -562,7 +559,7 @@ class IBCInstructionsViewSet(viewsets.ViewSet):
         """
         Retrieve an IBC Instruction by its primary key
         """
-        instance = get_object_or_404(IBCInstructions, pk=pk, is_activate=True)
+        instance = get_object_or_404(IBCInstructions, pk=pk, activate=True)
         serializer = IBCInstructionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -573,14 +570,16 @@ class IBCInstructionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new IBC Instruction
         """
-        serializer = IBCInstructionsSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = IBCInstructionsSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -588,7 +587,7 @@ class IBCInstructionsViewSet(viewsets.ViewSet):
         """
         Partially update an IBC Instruction
         """
-        instance = get_object_or_404(IBCInstructions, pk=pk, is_activate=True)
+        instance = get_object_or_404(IBCInstructions, pk=pk, activate=True)
         serializer = IBCInstructionsSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -597,8 +596,8 @@ class IBCInstructionsViewSet(viewsets.ViewSet):
         """
         Delete an IBC Instruction
         """
-        instance = get_object_or_404(IBCInstructions, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(IBCInstructions, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -612,7 +611,7 @@ class IBCProvisionsViewSet(viewsets.ViewSet):
         """
         List all IBC Provisions
         """
-        ibc_provisions = IBCProvisions.objects.filter(is_activate=True)
+        ibc_provisions = IBCProvisions.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(ibc_provisions, request)
         serializer = IBCProvisionsSerializer(page, many=True)
@@ -625,14 +624,14 @@ class IBCProvisionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def retrieve(self, request, pk=None):
         """
         Retrieve an IBC Provision by its primary key
         """
-        instance = get_object_or_404(IBCProvisions, pk=pk, is_activate=True)
+        instance = get_object_or_404(IBCProvisions, pk=pk, activate=True)
         serializer = IBCProvisionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -640,7 +639,9 @@ class IBCProvisionsViewSet(viewsets.ViewSet):
         """
         Create a new IBC Provision
         """
-        serializer = IBCProvisionsSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = IBCProvisionsSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -648,7 +649,7 @@ class IBCProvisionsViewSet(viewsets.ViewSet):
         """
         Partially update an IBC Provision
         """
-        instance = get_object_or_404(IBCProvisions, pk=pk, is_activate=True)
+        instance = get_object_or_404(IBCProvisions, pk=pk, activate=True)
         serializer = IBCProvisionsSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -657,8 +658,8 @@ class IBCProvisionsViewSet(viewsets.ViewSet):
         """
         Delete an IBC Provision
         """
-        instance = get_object_or_404(IBCProvisions, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(IBCProvisions, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -672,7 +673,7 @@ class TankInstructionsViewSet(viewsets.ViewSet):
         """
         List all Tank Instructions
         """
-        tank_instructions = TankInstructions.objects.filter(is_activate=True)
+        tank_instructions = TankInstructions.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(tank_instructions, request)
         serializer = TankInstructionsSerializer(page, many=True)
@@ -681,7 +682,7 @@ class TankInstructionsViewSet(viewsets.ViewSet):
         """
         Retrieve a Tank Instruction by its primary key
         """
-        instance = get_object_or_404(TankInstructions, pk=pk, is_activate=True)
+        instance = get_object_or_404(TankInstructions, pk=pk, activate=True)
         serializer = TankInstructionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -692,14 +693,16 @@ class TankInstructionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Tank Instruction
         """
-        serializer = TankInstructionsSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = TankInstructionsSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -707,7 +710,7 @@ class TankInstructionsViewSet(viewsets.ViewSet):
         """
         Partially update a Tank Instruction
         """
-        instance = get_object_or_404(TankInstructions, pk=pk, is_activate=True)
+        instance = get_object_or_404(TankInstructions, pk=pk, activate=True)
         serializer = TankInstructionsSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -716,8 +719,8 @@ class TankInstructionsViewSet(viewsets.ViewSet):
         """
         Delete a Tank Instruction
         """
-        instance = get_object_or_404(TankInstructions, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(TankInstructions, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -732,7 +735,7 @@ class TankProvisionsViewSet(viewsets.ViewSet):
         """
         List all Tank Provisions
         """
-        tank_provisions = TankProvisions.objects.filter(is_activate=True)
+        tank_provisions = TankProvisions.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(tank_provisions, request)
         serializer = TankProvisionsSerializer(page, many=True)
@@ -741,7 +744,7 @@ class TankProvisionsViewSet(viewsets.ViewSet):
         """
         Retrieve a Tank Provision by its primary key
         """
-        instance = get_object_or_404(TankProvisions, pk=pk, is_activate=True)
+        instance = get_object_or_404(TankProvisions, pk=pk, activate=True)
         serializer = TankProvisionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -752,14 +755,16 @@ class TankProvisionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Tank Provision
         """
-        serializer = TankProvisionsSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = TankProvisionsSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -767,7 +772,7 @@ class TankProvisionsViewSet(viewsets.ViewSet):
         """
         Partially update a Tank Provision
         """
-        instance = get_object_or_404(TankProvisions, pk=pk, is_activate=True)
+        instance = get_object_or_404(TankProvisions, pk=pk, activate=True)
         serializer = TankProvisionsSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -776,8 +781,8 @@ class TankProvisionsViewSet(viewsets.ViewSet):
         """
         Delete a Tank Provision
         """
-        instance = get_object_or_404(TankProvisions, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(TankProvisions, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -791,7 +796,7 @@ class EmergencyScheduleViewSet(viewsets.ViewSet):
         """
         List all Emergency Schedules
         """
-        emergency_schedules = EmergencySchedule.objects.filter(is_activate=True)
+        emergency_schedules = EmergencySchedule.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(emergency_schedules, request)
         serializer = EmergencyScheduleSerializer(page, many=True)
@@ -800,7 +805,7 @@ class EmergencyScheduleViewSet(viewsets.ViewSet):
         """
         Retrieve an Emergency Schedule by its primary key
         """
-        instance = get_object_or_404(EmergencySchedule, pk=pk, is_activate=True)
+        instance = get_object_or_404(EmergencySchedule, pk=pk, activate=True)
         serializer = EmergencyScheduleSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -811,14 +816,16 @@ class EmergencyScheduleViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Emergency Schedule
         """
-        serializer = EmergencyScheduleSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = EmergencyScheduleSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -826,7 +833,7 @@ class EmergencyScheduleViewSet(viewsets.ViewSet):
         """
         Partially update an Emergency Schedule
         """
-        instance = get_object_or_404(EmergencySchedule, pk=pk, is_activate=True)
+        instance = get_object_or_404(EmergencySchedule, pk=pk, activate=True)
         serializer = EmergencyScheduleSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -835,8 +842,8 @@ class EmergencyScheduleViewSet(viewsets.ViewSet):
         """
         Delete an Emergency Schedule
         """
-        instance = get_object_or_404(EmergencySchedule, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(EmergencySchedule, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -850,7 +857,7 @@ class StowageHandlingViewSet(viewsets.ViewSet):
         """
         List all Stowage Handlings
         """
-        stowage_handlings = StowageHandling.objects.filter(is_activate=True)
+        stowage_handlings = StowageHandling.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(stowage_handlings, request)
         serializer = StowageHandlingSerializer(page, many=True)
@@ -859,7 +866,7 @@ class StowageHandlingViewSet(viewsets.ViewSet):
         """
         Retrieve a Stowage Handling by its primary key
         """
-        instance = get_object_or_404(StowageHandling, pk=pk, is_activate=True)
+        instance = get_object_or_404(StowageHandling, pk=pk, activate=True)
         serializer = StowageHandlingSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -870,14 +877,16 @@ class StowageHandlingViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Stowage Handling
         """
-        serializer = StowageHandlingSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = StowageHandlingSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -885,7 +894,7 @@ class StowageHandlingViewSet(viewsets.ViewSet):
         """
         Partially update a Stowage Handling
         """
-        instance = get_object_or_404(StowageHandling, pk=pk, is_activate=True)
+        instance = get_object_or_404(StowageHandling, pk=pk, activate=True)
         serializer = StowageHandlingSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -894,8 +903,8 @@ class StowageHandlingViewSet(viewsets.ViewSet):
         """
         Delete a Stowage Handling
         """
-        instance = get_object_or_404(StowageHandling, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(StowageHandling, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -909,7 +918,7 @@ class SegregationViewSet(viewsets.ViewSet):
         """
         List all Segregations
         """
-        segregations = Segregation.objects.filter(is_activate=True)
+        segregations = Segregation.objects.filter(activate=True)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(segregations, request)
         serializer = SegeregationSerializer(page, many=True)
@@ -918,7 +927,7 @@ class SegregationViewSet(viewsets.ViewSet):
         """
         Retrieve a Segregation by its primary key
         """
-        instance = get_object_or_404(Segregation, pk=pk, is_activate=True)
+        instance = get_object_or_404(Segregation, pk=pk, activate=True)
         serializer = SegeregationSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'], url_path='get-by-code')
@@ -929,14 +938,16 @@ class SegregationViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-        instance = get_object_or_404(UNCode, code=code_param, is_activate=True)
+        instance = get_object_or_404(UNCode, code=code_param, activate=True)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Segregation
         """
-        serializer = SegeregationSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = SegeregationSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -944,7 +955,7 @@ class SegregationViewSet(viewsets.ViewSet):
         """
         Partially update a Segregation
         """
-        instance = get_object_or_404(Segregation, pk=pk, is_activate=True)
+        instance = get_object_or_404(Segregation, pk=pk, activate=True)
         serializer = SegeregationSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -953,8 +964,8 @@ class SegregationViewSet(viewsets.ViewSet):
         """
         Delete a Segregation
         """
-        instance = get_object_or_404(Segregation, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(Segregation, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -966,21 +977,23 @@ class SegregationBarViewSet(viewsets.ViewSet):
         """
         List all Segregation Bars
         """
-        segregations = SegregationBar.objects.filter(is_activate=True)
+        segregations = SegregationBar.objects.filter(activate=True)
         serializer = SegregationBarSerializer(segregations, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def retrieve(self, request, pk=None):
         """
         Retrieve a Segregation Bar by its primary key
         """
-        instance = get_object_or_404(Segregation, pk=pk, is_activate=True)
+        instance = get_object_or_404(Segregation, pk=pk, activate=True)
         serializer = SegregationBarSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Segregation Bar
         """
-        serializer = SegregationBarSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = SegregationBarSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -988,7 +1001,7 @@ class SegregationBarViewSet(viewsets.ViewSet):
         """
         Partially update a Segregation Bar
         """
-        instance = get_object_or_404(Segregation, pk=pk, is_activate=True)
+        instance = get_object_or_404(Segregation, pk=pk, activate=True)
         serializer = SegregationBarSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -997,8 +1010,8 @@ class SegregationBarViewSet(viewsets.ViewSet):
         """
         Delete a Segregation Bar
         """
-        instance = get_object_or_404(Segregation, pk=pk, is_activate=True)
-        instance.is_activate = False
+        instance = get_object_or_404(Segregation, pk=pk, activate=True)
+        instance.activate = False
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -1012,7 +1025,7 @@ class DangerousGoodsViewSet(viewsets.ViewSet):
         """
         List all Dangerous Goods
         """
-        dangerous_goods = DangerousGoods.objects.filter(is_activate=True)
+        dangerous_goods = DangerousGoods.objects.all()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(dangerous_goods, request)
         serializer = DangerousGoodsSerializer(page, many=True)
@@ -1021,14 +1034,16 @@ class DangerousGoodsViewSet(viewsets.ViewSet):
         """
         Retrieve a Dangerous Good by its primary key
         """
-        instance = get_object_or_404(DangerousGoods, pk=pk, is_activate=True)
+        instance = get_object_or_404(DangerousGoods, pk=pk)
         serializer = DangerousGoodsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
         Create a new Dangerous Good
         """
-        serializer = DangerousGoodsSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = DangerousGoodsSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1036,7 +1051,7 @@ class DangerousGoodsViewSet(viewsets.ViewSet):
         """
         Partially update a Dangerous Good
         """
-        instance = get_object_or_404(DangerousGoods, pk=pk, is_activate=True)
+        instance = get_object_or_404(DangerousGoods, pk=pk)
         serializer = DangerousGoodsSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -1045,7 +1060,6 @@ class DangerousGoodsViewSet(viewsets.ViewSet):
         """
         Delete a Dangerous Good
         """
-        instance = get_object_or_404(DangerousGoods, pk=pk, is_activate=True)
-        instance.is_activate = False
-        instance.save()
+        instance = get_object_or_404(DangerousGoods, pk=pk)
+        instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

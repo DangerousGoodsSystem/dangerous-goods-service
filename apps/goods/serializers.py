@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.db import IntegrityError
 from .helpers import get_or_create_class_division_group
 from .models import (
     UNCode,
@@ -22,7 +23,31 @@ from .models import (
     DangerousGoods,
 )
 
+class BaseListSerializer(serializers.ListSerializer):
+    """
+    Custom ListSerializer to handle bulk creation with detailed error reporting.
+    """
+    def create(self, validated_data):
+        instances = []
+        errors = []
+        for idx, item_data in enumerate(validated_data):
+            try:
+                inst = self.child.create(item_data)
+                instances.append(inst)
+                errors.append(None)
+            except serializers.ValidationError as exc:
+                errors.append(exc.detail)
+                instances.append(None)
+        if not any(errors):
+            return instances
+
+        raise serializers.ValidationError({
+            'results': instances,
+            'errors': errors
+        })
+
 class UNCodeSerializer(serializers.ModelSerializer):
+    """Custom serializer for UNCode model with bulk creation support."""
     class Meta:
         model = UNCode
         fields = ['id',
@@ -31,21 +56,23 @@ class UNCodeSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = UNCode.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
-
 class ClassificationSerializer(serializers.ModelSerializer):
+    """Custom serializer for Classification model with bulk creation support."""
     class Meta:
         model = Classification
         fields = ['id',
@@ -54,22 +81,25 @@ class ClassificationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = Classification.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.label = validated_data.get('label')
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 
 class DivisionSerializer(serializers.ModelSerializer):
+    """Custom serializer for Division model with bulk creation support."""
     classification_id = serializers.PrimaryKeyRelatedField(
         queryset=Classification.objects.all(),
         source='classification',
@@ -87,19 +117,21 @@ class DivisionSerializer(serializers.ModelSerializer):
         'classification_id': {'validators': []},
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         classification_id = validated_data.get('classification_id')
         code = validated_data.get('code')
         instance = Division.objects.filter(classification_id=classification_id, code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.label = validated_data.get('label')
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})  
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})  
         return super().create(validated_data)
 
 
@@ -129,19 +161,21 @@ class CompatibilityGroupSerializer(serializers.ModelSerializer):
         'division_id': {'validators': []},
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         classification_id = validated_data.get('classification_id')
         division_id = validated_data.get('division_id')
         code = validated_data.get('code')
         instance = CompatibilityGroup.objects.filter(classification_id=classification_id, division_id=division_id, code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class ClassDivisionGroupField(serializers.Field):
@@ -166,6 +200,7 @@ class ClassDivisionGroupField(serializers.Field):
         return instance
 
 class PackingGroupSerializer(serializers.ModelSerializer):
+    """Custom serializer for PackingGroup model with bulk creation support."""
     class Meta:
         model = PackingGroup
         fields = ['id',
@@ -174,21 +209,23 @@ class PackingGroupSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = PackingGroup.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 
 class SpecialProvisionsSerializer(serializers.ModelSerializer):
+    """Custom serializer for SpecialProvisions model with bulk creation support."""
     class Meta:
         model = SpecialProvisions
         fields = ['id',
@@ -197,20 +234,23 @@ class SpecialProvisionsSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
             code = validated_data.get('code')
             instance = SpecialProvisions.objects.filter(code=code).first()
             if instance:
-                if not instance.is_activate:
-                    instance.is_activate = True
+                if not instance.activate:
+                    instance.activate = True
                     instance.description = validated_data.get('description')
                     instance.save()
                     return instance
                 else:
-                    raise serializers.ValidationError({'error': 'Code has existed'})
+                    raise serializers.ValidationError({'error': f'Code {code} has existed'})
             return super().create(validated_data)   
 
 class ExceptedQuantitiesSerializer(serializers.ModelSerializer):
+    """Custom serializer for ExceptedQuantities model with bulk creation support."""
     class Meta:
         model = ExceptedQuantities
         fields = ['id',
@@ -219,20 +259,23 @@ class ExceptedQuantitiesSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = ExceptedQuantities.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class PackingInstructionsSerializer(serializers.ModelSerializer):
+    """Custom serializer for PackingInstructions model with bulk creation support."""
     class Meta:
         model = PackingInstructions
         fields = ['id',
@@ -241,20 +284,23 @@ class PackingInstructionsSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = PackingInstructions.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class PackingProvisionsSerializer(serializers.ModelSerializer):
+    """"Custom serializer for PackingProvisions model with bulk creation support."""
     class Meta:
         model = PackingProvisions
         fields = ['id',
@@ -263,20 +309,23 @@ class PackingProvisionsSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = PackingProvisions.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class IBCInstructionsSerializer(serializers.ModelSerializer):
+    """Custom serializer for IBCInstructions model with bulk creation support."""
     class Meta:
         model = IBCInstructions
         fields = ['id',
@@ -285,20 +334,23 @@ class IBCInstructionsSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = IBCInstructions.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class IBCProvisionsSerializer(serializers.ModelSerializer):
+    """Custom serializer for IBCProvisions model with bulk creation support."""
     class Meta:
         model = IBCProvisions
         fields = ['id',
@@ -307,20 +359,23 @@ class IBCProvisionsSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = IBCProvisions.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class TankInstructionsSerializer(serializers.ModelSerializer):
+    """Custom serializer for TankInstructions model with bulk creation support."""
     class Meta:
         model = TankInstructions
         fields = ['id',
@@ -329,20 +384,23 @@ class TankInstructionsSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = TankInstructions.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class TankProvisionsSerializer(serializers.ModelSerializer):
+    """Custom serializer for TankProvisions model with bulk creation support."""
     class Meta:
         model = TankProvisions
         fields = ['id',
@@ -351,20 +409,23 @@ class TankProvisionsSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = TankProvisions.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class EmergencyScheduleSerializer(serializers.ModelSerializer):
+    """Custom serializer for EmergencySchedule model with bulk creation support."""
     class Meta:
         model = EmergencySchedule
         fields = ['id',
@@ -373,20 +434,23 @@ class EmergencyScheduleSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = EmergencySchedule.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class StowageHandlingSerializer(serializers.ModelSerializer):
+    """Custom serializer for StowageHandling model with bulk creation support."""
     class Meta:
         model = StowageHandling
         fields = ['id',
@@ -395,20 +459,23 @@ class StowageHandlingSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = StowageHandling.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class SegeregationSerializer(serializers.ModelSerializer):
+    """Custom serializer for Segregation model with bulk creation support."""
     class Meta:
         model = Segregation
         fields = ['id',
@@ -417,28 +484,31 @@ class SegeregationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
         'code': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = Segregation.objects.filter(code=code).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
+            if not instance.activate:
+                instance.activate = True
                 instance.description = validated_data.get('description')
                 instance.save()
                 return instance
             else:
-                raise serializers.ValidationError({'error': 'Code has existed'})
+                raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
 class SegregationBarSerializer(serializers.ModelSerializer):
+    """Custom serializer for SegregationBar model with bulk creation support."""
     from_class_id = serializers.PrimaryKeyRelatedField(
         queryset=ClassDivisionGroup.objects.all(),
-        source='from_class',
+        source='fromclass',
         write_only=True
     )
     to_class_id = serializers.PrimaryKeyRelatedField(
         queryset=ClassDivisionGroup.objects.all(),
-        source='to_class',
+        source='toclass',
         write_only=True
     )
 
@@ -452,17 +522,19 @@ class SegregationBarSerializer(serializers.ModelSerializer):
                   'to_class_id', 'to_class',
                   'segregation_level']
         extra_kwargs = {
-        'from_class': {'validators': []},
-        'to_class': {'validators': []}
+        'from_class_id': {'validators': []},
+        'to_class_id': {'validators': []}
         }
+        list_serializer_class = BaseListSerializer
+
     def create(self, validated_data):
         from_class_id = validated_data.get('from_class_id')
         to_class_id = validated_data.get('to_class_id')
         instance = SegregationBar.objects.filter(from_class_id=from_class_id, to_class_id=to_class_id).first()
         if instance:
-            if not instance.is_activate:
-                instance.is_activate = True
-                instance.segregation_level = validated_data.get('segregation_level')
+            if not instance.activate:
+                instance.activate = True
+                instance.segregationlevel = validated_data.get('segregation_level')
                 instance.save()
                 return instance
             else:
@@ -471,93 +543,106 @@ class SegregationBarSerializer(serializers.ModelSerializer):
 
 
 class DangerousGoodsSerializer(serializers.ModelSerializer):
+    """Custom serializer for DangerousGoods model."""
     un_code_code = serializers.SlugRelatedField(
         slug_field='code',
         queryset=UNCode.objects.all(),
-        source='un_code'
+        source='uncode'
     )
-    class_division_code = ClassDivisionGroupField(source='class_division')
+    proper_shipping_name = serializers.CharField(
+        source='propershippingname',
+        allow_blank=True,
+        allow_null=True,
+        required=False
+    )
+    class_division_code = ClassDivisionGroupField(source='classdivision')
     subsidiary_hazards_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=ClassDivisionGroup.objects.all(),
-        source='subsidiary_hazards',
+        source='subsidiaryhazards',
         required=False
     )
     packing_group_code = serializers.SlugRelatedField(
         slug_field='code',
         queryset=PackingGroup.objects.all(),
-        source='packing_group',
+        source='packinggroup',
         required=False
     )
     special_provisions_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=SpecialProvisions.objects.all(),
-        source='special_provisions',
+        source='specialprovisions',
+        required=False
+    )
+    limited_quantities = serializers.CharField(
+        source='limitedquantities',
+        allow_blank=True,
+        allow_null=True,
         required=False
     )
     excepted_quantities_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=ExceptedQuantities.objects.all(),
-        source='excepted_quantities',
+        source='exceptedquantities',
         required=False
     )
     packing_instructions_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=PackingInstructions.objects.all(),
-        source='packing_instructions',
+        source='packinginstructions',
         required=False
     )
     packing_provisions_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=PackingProvisions.objects.all(),
-        source='packing_provisions',
+        source='packingprovisions',
         required=False
     )
     ibc_instructions_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=IBCInstructions.objects.all(),
-        source='ibc_instructions',
+        source='ibcinstructions',
         required=False
     )
     ibc_provisions_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=IBCProvisions.objects.all(),
-        source='ibc_provisions',
+        source='ibcprovisions',
         required=False
     )
     tank_instructions_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=TankInstructions.objects.all(),
-        source='tank_instructions',
+        source='tankinstructions',
         required=False
     )
     tank_provisions_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=TankProvisions.objects.all(),
-        source='tank_provisions',
+        source='tankprovisions',
         required=False
     )
     emergency_schedule_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=EmergencySchedule.objects.all(),
-        source='emergency_schedule',
+        source='emergencyschedule',
         required=False
     )
     stowage_handling_codes = serializers.SlugRelatedField(
         many=True,
         slug_field='code',
         queryset=StowageHandling.objects.all(),
-        source='stowage_handling',
+        source='stowagehandling',
         required=False
     )
     segregation_codes = serializers.SlugRelatedField(
@@ -567,6 +652,13 @@ class DangerousGoodsSerializer(serializers.ModelSerializer):
         source='segregation',
         required=False
     )
+    observations = serializers.CharField(
+        source='observation',
+        allow_blank=True,
+        allow_null=True,
+        required=False
+    )
+
     class Meta:
         model = DangerousGoods
         fields = ['id',
@@ -589,3 +681,12 @@ class DangerousGoodsSerializer(serializers.ModelSerializer):
                   'segregation_codes',
                   'observations',
                   ]
+        list_serializer_class = BaseListSerializer
+
+    def create(self, validated_data):
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'non_field_errors': ['This combination already exists.']
+            })

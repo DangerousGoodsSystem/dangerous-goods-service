@@ -10,7 +10,7 @@ def get_or_create_class_division_group(code_str):
 
     cls, _ = Classification.objects.get_or_create(
         code=class_code,
-        defaults={'description': {}, 'is_activate': True}
+        defaults={'description': {}, 'activate': True}
     )
 
     div = None
@@ -18,7 +18,7 @@ def get_or_create_class_division_group(code_str):
         div, _ = Division.objects.get_or_create(
             classification=cls,
             code=div_code,
-            defaults={'description': {}, 'is_activate': True}
+            defaults={'description': {}, 'activate': True}
         )
 
     comp = None
@@ -27,14 +27,14 @@ def get_or_create_class_division_group(code_str):
             classification=cls,
             division=div,
             code=comp_code,
-            defaults={'description': {}, 'is_activate': True}
+            defaults={'description': {}, 'activate': True}
         )
 
     group, created = ClassDivisionGroup.objects.get_or_create(
         classification=cls,
         division=div,
         compatibility_group=comp,
-        defaults={'is_activate': True}
+        defaults={'activate': True}
     )
 
     return group, created
