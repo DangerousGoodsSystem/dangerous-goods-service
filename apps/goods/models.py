@@ -144,7 +144,7 @@ class EmergencySchedule(models.Model):
 
 class StowageHandling(models.Model):
     id = models.AutoField(primary_key=True)
-    code = models.CharField(max_length=3, unique=True)
+    code = models.CharField(max_length=10, unique=True)
     description = models.JSONField(default=dict)
     activate = models.BooleanField(default=True)
     class Meta:

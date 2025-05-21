@@ -7,8 +7,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
     pkg-config \
-    default-libmysqlclient-dev \
-    libmariadb-dev \
+    libpq-dev \
     libjpeg-dev \
     zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
@@ -16,8 +15,10 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app/dangerous_goods
 
 COPY requirements.txt ./requirements.txt
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/dangerous_goods/
 
 EXPOSE 8000
+
