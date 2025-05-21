@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.db.models import Q
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
@@ -48,6 +49,7 @@ from .serializers import(
 
 class UNCodeViewSet(viewsets.ViewSet):
     pagination_class = CustomPagination
+    
     def list(self, request):
         """List all UN Codes"""
         un_codes = UNCode.objects.filter(activate=True)
@@ -1063,3 +1065,31 @@ class DangerousGoodsViewSet(viewsets.ViewSet):
         instance = get_object_or_404(DangerousGoods, pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class SearchDangerousGoodsViewSet(viewsets.ViewSet):
+    pagination_class = CustomPagination
+
+    def list(self, request):
+        """
+        Search Dangerous Goods
+        """
+        search_term = request.query_params.get('search', None)
+        if not search_term:
+            return Response({"detail": "Missing 'search' parameter."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        dangerous_goods = DangerousGoods.objects.filter(
+            Q(uncode__code=search_term)
+        )
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(dangerous_goods, request)
+        serializer = DangerousGoodsSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
+    def retrieve(self, request, pk=None):
+        """
+        Retrieve a Dangerous Good by its primary key
+        """
+        instance = get_object_or_404(DangerousGoods, pk=pk)
+        serializer = DangerousGoodsSerializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -19,6 +19,7 @@ from .views import (
     SegregationViewSet,
     SegregationBarViewSet,
     DangerousGoodsViewSet,
+    SearchDangerousGoodsViewSet,
 )
 router = DefaultRouter()
 router.register(r'un-codes', UNCodeViewSet, basename='un_codes')
@@ -39,6 +40,7 @@ router.register(r'stowage-handling', StowageHandlingViewSet, basename='stowage_h
 router.register(r'segregations', SegregationViewSet, basename='segregations')
 router.register(r'dangerous-goods', DangerousGoodsViewSet, basename='dangerous_goods')
 router.register(r'segregation-bars', SegregationBarViewSet, basename='segregation_bars')
+router.register(r'search-dangerous-goods', SearchDangerousGoodsViewSet, basename='search-dangerous-goods')
 
 urlpatterns = [
     path('', include(router.urls)),
