@@ -36,7 +36,7 @@ services:
     command: ["bash", "-c", "PYTHONPATH=/app/dangerous_goods celery -A config.celery worker --loglevel=info"]
 
   redis:
-    image: redis:latest
+    image: redis:7.4
     restart: always
     volumes:
       - redis_data:/data
@@ -60,7 +60,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      
+  
+  nginx:
+    image: nginx:1.28.0
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+
 volumes:
   staticfiles_data:
     name: dangerous_goods_staticfiles_data
