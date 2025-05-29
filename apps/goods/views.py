@@ -1060,7 +1060,7 @@ Dangerous Goods ViewSet
 class DangerousGoodsViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
-    queryset = DangerousGoods.objects.filter(activate=True)
+    queryset = DangerousGoods.objects.all()
 
     def list(self, request):
         """
@@ -1108,7 +1108,7 @@ class DangerousGoodsViewSet(viewsets.ViewSet):
 class SearchDangerousGoodsViewSet(viewsets.ViewSet):
     permission_classes = [IsUser]
     pagination_class = CustomPagination
-    queryset = DangerousGoods.objects.filter(activate=True)
+    queryset = DangerousGoods.objects.all()
 
     def list(self, request):
         """
@@ -1119,7 +1119,7 @@ class SearchDangerousGoodsViewSet(viewsets.ViewSet):
             return Response({"detail": "Missing 'search' parameter."}, status=status.HTTP_400_BAD_REQUEST)
 
         dangerous_goods = self.queryset.filter(
-            Q(uncode__code=search_term)
+            Q(uncode__code=search_term, uncode__activate=True)
         )
 
         paginator = self.pagination_class()

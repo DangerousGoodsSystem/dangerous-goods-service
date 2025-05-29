@@ -34,7 +34,6 @@ class Division(models.Model):
 
 class CompatibilityGroup(models.Model):
     id = models.AutoField(primary_key=True)
-    classification = models.ForeignKey(Classification, on_delete=models.CASCADE, related_name='compatibility_groups')
     division = models.ForeignKey(Division, on_delete=models.CASCADE, related_name='compatibility_groups')
     code = models.CharField(max_length=1)
     description = models.JSONField(default=dict)
@@ -42,7 +41,7 @@ class CompatibilityGroup(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['classification', 'division', 'code'], name='unique_class_division_code'
+                fields=['division', 'code'], name='unique_division_code'
             )
         ]
         db_table = 'goods.compatibilitygroup'
@@ -60,7 +59,6 @@ class ClassDivisionGroup(models.Model):
             )
         ]
         db_table = 'goods.class_division_group'
-
 
 class PackingGroup(models.Model):
     id = models.AutoField(primary_key=True)

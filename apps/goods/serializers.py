@@ -136,38 +136,30 @@ class DivisionSerializer(serializers.ModelSerializer):
 
 
 class CompatibilityGroupSerializer(serializers.ModelSerializer):
-    classification_id = serializers.PrimaryKeyRelatedField(
-        queryset=Classification.objects.all(),
-        source='classification',
-        write_only=True
-    )
+    """Custom serializer for CompatibilityGroup model with bulk creation support."""
     division_id = serializers.PrimaryKeyRelatedField(
         queryset=Division.objects.all(),
         source='division',
         write_only=True
     )
-    classification = ClassificationSerializer(read_only=True)
     division = DivisionSerializer(read_only=True)
 
     class Meta:
         model = CompatibilityGroup
         fields = ['id',
-                  'classification_id', 'classification',
                   'division_id', 'division',
                   'code',
                   'description']
         extra_kwargs = {
-        'classification_id': {'validators': []},
         'division_id': {'validators': []},
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
 
     def create(self, validated_data):
-        classification_id = validated_data.get('classification_id')
         division_id = validated_data.get('division_id')
         code = validated_data.get('code')
-        instance = CompatibilityGroup.objects.filter(classification_id=classification_id, division_id=division_id, code=code).first()
+        instance = CompatibilityGroup.objects.filter(division_id=division_id, code=code).first()
         if instance:
             if not instance.activate:
                 instance.activate = True
