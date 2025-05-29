@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'apps.accounts',
-    'apps.customers',
     'apps.goods',
     
 ]
@@ -120,7 +119,6 @@ CACHES = {
 
 REST_FRAMEWORK={
         'DEFAULT_AUTHENTICATION_CLASSES': (
-        'apps.accounts.authentication.CustomJWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication', 

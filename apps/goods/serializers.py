@@ -474,7 +474,7 @@ class StowageHandlingSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({'error': f'Code {code} has existed'})
         return super().create(validated_data)
 
-class SegeregationSerializer(serializers.ModelSerializer):
+class SegregationSerializer(serializers.ModelSerializer):
     """Custom serializer for Segregation model with bulk creation support."""
     class Meta:
         model = Segregation
