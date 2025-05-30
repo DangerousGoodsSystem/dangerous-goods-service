@@ -10,7 +10,7 @@ services:
       - "8000:8000"
     env_file:
       - .env
-    restart: always
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
@@ -27,7 +27,7 @@ services:
       - .:/app/dangerous_goods
     env_file:
       - .env
-    restart: always
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
@@ -37,7 +37,7 @@ services:
 
   redis:
     image: redis:7.4
-    restart: always
+    restart: unless-stopped
     volumes:
       - redis_data:/data
     healthcheck:
@@ -48,7 +48,7 @@ services:
 
   db:
     image: postgres:16.9
-    restart: always
+    restart: unless-stopped
     env_file:
       - .env
     ports:
