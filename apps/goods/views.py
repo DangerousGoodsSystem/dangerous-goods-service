@@ -8,42 +8,42 @@ from .permissions import IsStaffUser, IsUser, DjangoModelPermissionsWithView
 from .pagination import CustomPagination
 
 from .models import (
-    UNCode,
+    UNCode, UNCodeImage,
     Classification,
     Division,
     CompatibilityGroup,
-    PackingGroup,
-    SpecialProvisions,
-    ExceptedQuantities,
-    PackingInstructions,
-    PackingProvisions,
-    IBCInstructions,
-    IBCProvisions,
-    TankInstructions,
-    TankProvisions,
-    EmergencySchedule,
-    StowageHandling,
-    Segregation,
+    PackingGroup, PackingGroupImage,
+    SpecialProvisions, SpecialProvisionsImage,
+    ExceptedQuantities, ExceptedQuantitiesImage,
+    PackingInstructions, PackingInstructionsImage,
+    PackingProvisions, PackingProvisionsImage,
+    IBCInstructions, IBCInstructionsImage,
+    IBCProvisions, IBCProvisionsImage,
+    TankInstructions, TankInstructionsImage,
+    TankProvisions, TankProvisionsImage,
+    EmergencySchedule, EmergencyScheduleImage,
+    StowageHandling, StowageHandlingImage,
+    Segregation, SegregationImage,
     SegregationBar,
     DangerousGoods,
 )
 from .serializers import(
-    UNCodeSerializer,
+    UNCodeSerializer, UNCodeImageSerializer,
     ClassificationSerializer,
     DivisionSerializer,
     CompatibilityGroupSerializer,
-    PackingGroupSerializer,
-    SpecialProvisionsSerializer,
-    ExceptedQuantitiesSerializer,
-    PackingInstructionsSerializer,
-    PackingProvisionsSerializer,
-    IBCInstructionsSerializer,
-    IBCProvisionsSerializer,
-    TankInstructionsSerializer,
-    TankProvisionsSerializer,
-    EmergencyScheduleSerializer,
-    StowageHandlingSerializer,
-    SegregationSerializer,
+    PackingGroupSerializer, PackingGroupImageSerializer,
+    SpecialProvisionsSerializer, SpecialProvisionsImageSerializer,
+    ExceptedQuantitiesSerializer, ExceptedQuantitiesImageSerializer,
+    PackingInstructionsSerializer, PackingInstructionsImageSerializer,
+    PackingProvisionsSerializer, PackingProvisionsImageSerializer,
+    IBCInstructionsSerializer, IBCInstructionsImageSerializer,
+    IBCProvisionsSerializer, IBCProvisionsImageSerializer,
+    TankInstructionsSerializer, TankInstructionsImageSerializer,
+    TankProvisionsSerializer, TankProvisionsImageSerializer,
+    EmergencyScheduleSerializer, EmergencyScheduleImageSerializer,
+    StowageHandlingSerializer, StowageHandlingImageSerializer,
+    SegregationSerializer, SegregationImageSerializer,
     SegregationBarSerializer,
     DangerousGoodsSerializer,
 )
@@ -1121,12 +1121,10 @@ class SearchDangerousGoodsViewSet(viewsets.ViewSet):
         dangerous_goods = self.queryset.filter(
             Q(uncode__code=search_term, uncode__activate=True)
         )
-
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(dangerous_goods, request)
         serializer = DangerousGoodsSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
-    
     def retrieve(self, request, pk=None):
         """
         Retrieve a Dangerous Good by its primary key
@@ -1134,3 +1132,382 @@ class SearchDangerousGoodsViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.queryset, pk=pk)
         serializer = DangerousGoodsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class UNCodeImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = UNCodeImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new UN Code Image
+        """
+        serializer = UNCodeImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update a UN Code Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = UNCodeImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete a UN Code Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class PackingGroupImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = PackingGroupImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Packing Group Image
+        """
+        serializer = PackingGroupImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update a Packing Group Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = PackingGroupImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete a Packing Group Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class SpecialProvisionsImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = SpecialProvisionsImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Special Provisions Image
+        """
+        serializer = SpecialProvisionsImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update a Special Provision Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = SpecialProvisionsImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete a Special Provision Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class ExceptedQuantitiesImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = ExceptedQuantitiesImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Excepted Quantities Image
+        """
+        serializer = ExceptedQuantitiesImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update an Excepted Quantities Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = ExceptedQuantitiesImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete an Excepted Quantities Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class PackingInstructionsImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = PackingInstructionsImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Packing Instructions Image
+        """
+        serializer = PackingInstructionsImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update a Packing Instructions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = PackingInstructionsImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete a Packing Instructions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class PackingProvisionsImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = PackingProvisionsImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Packing Provisions Image
+        """
+        serializer = PackingProvisionsImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update a Packing Provisions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = PackingProvisionsImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete a Packing Provisions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class IBCInstructionsImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = IBCInstructionsImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new IBC Instructions Image
+        """
+        serializer = IBCInstructionsImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update an IBC Instructions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = IBCInstructionsImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete an IBC Instructions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class IBCProvisionsImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = IBCProvisionsImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new IBC Provisions Image
+        """
+        serializer = IBCProvisionsImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update an IBC Provisions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = IBCProvisionsImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def destroy(self, request, pk=None):
+        """
+        Delete an IBC Provisions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class TankInstructionsImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = TankInstructionsImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Tank Instructions Image
+        """
+        serializer = TankInstructionsImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update a Tank Instructions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = TankInstructionsImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete a Tank Instructions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class TankProvisionsImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = TankProvisionsImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Tank Provisions Image
+        """
+        serializer = TankProvisionsImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update a Tank Provisions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = TankProvisionsImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete a Tank Provisions Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class EmergencyScheduleImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = EmergencyScheduleImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Emergency Schedule Image
+        """
+        serializer = EmergencyScheduleImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update an Emergency Schedule Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = EmergencyScheduleImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete an Emergency Schedule Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class StowageHandlingImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = StowageHandlingImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Stowage Handling Image
+        """
+        serializer = StowageHandlingImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update a Stowage Handling Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = StowageHandlingImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete a Stowage Handling Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class SegregationImageViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+    queryset = SegregationImage.objects.all()
+
+    def create (self, request):
+        """
+        Create a new Segregation Image
+        """
+        serializer = SegregationImageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """
+        Partially update a Segregation Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        serializer = SegregationImageSerializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """
+        Delete a Segregation Image
+        """
+        instance = get_object_or_404(self.queryset, pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
