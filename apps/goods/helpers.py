@@ -24,7 +24,6 @@ def get_or_create_class_division_group(code_str):
     comp = None
     if comp_code is not None:
         comp, _ = CompatibilityGroup.objects.get_or_create(
-            classification=cls,
             division=div,
             code=comp_code,
             defaults={'description': {}, 'activate': True}
