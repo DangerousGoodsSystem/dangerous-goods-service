@@ -336,6 +336,18 @@ class ClassDivisionGroupField(serializers.Field):
             raise serializers.ValidationError(str(e))
         return instance
 
+class ClassDivisionGroupListField(serializers.ListField):
+    """
+    Custom ListField to handle a list of ClassDivisionGroup instances.
+    """
+    def __init__(self, **kwargs):
+        super().__init__(child=ClassDivisionGroupField(), **kwargs)
+
+    def to_representation(self, data):
+        if hasattr(data, 'all'):
+            data = data.all()
+        return super().to_representation(data)
+
 class PackingGroupSerializer(serializers.ModelSerializer):
     """Custom serializer for PackingGroup model with bulk creation support."""
     images = PackingGroupImageSerializer(many=True, read_only=True)
@@ -717,10 +729,7 @@ class DangerousGoodsSerializer(serializers.ModelSerializer):
         required=False
     )
     class_division_code = ClassDivisionGroupField(source='classdivision')
-    subsidiary_hazards_codes = serializers.SlugRelatedField(
-        many=True,
-        slug_field='code',
-        queryset=ClassDivisionGroup.objects.all(),
+    subsidiary_hazards_codes = ClassDivisionGroupListField(
         source='subsidiaryhazards',
         required=False
     )
