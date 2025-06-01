@@ -822,12 +822,7 @@ class DangerousGoodsSerializer(serializers.ModelSerializer):
         source='segregation',
         required=False
     )
-    observations = serializers.CharField(
-        source='observation',
-        allow_blank=True,
-        allow_null=True,
-        required=False
-    )
+    observations = serializers.CharField(required=False)
 
     class Meta:
         model = DangerousGoods
