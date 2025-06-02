@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.db import IntegrityError
 from .helpers import get_or_create_class_division_group
 from .models import (
-    UNCode, UNCodeImage,
+    UNCode,
     Classification,
     Division,
     CompatibilityGroup,
@@ -46,157 +46,120 @@ class BaseListSerializer(serializers.ListSerializer):
             'errors': errors
         })
 
-class UNCodeImageSerializer(serializers.ModelSerializer):
-    """Serializer for UNCodeImage model."""
-    un_code_id = serializers.PrimaryKeyRelatedField(
-        queryset=UNCode.objects.filter(activate=True),
-        source='uncode',
-        write_only=True
-    )
-    class Meta:
-        model = UNCodeImage
-        fields = ['id', 'un_code_id', 'image']
-
 class PackingGroupImageSerializer(serializers.ModelSerializer):
-    """Serializer for PackingGroupImage model."""
-    packing_group_id = serializers.PrimaryKeyRelatedField(
-        queryset=PackingGroup.objects.filter(activate=True),
-        source='packinggroup',
-        write_only=True
-    )
+    """Custom serializer for PackingGroupImage model."""
     class Meta:
         model = PackingGroupImage
-        fields = ['id', 'packing_group_id', 'image']
+        fields = ['id', 'packinggroup_code', 'image']
+        extra_kwargs = {
+            'packinggroup_code': {'write_only': True}
+        }
 
 class SpecialProvisionsImageSerializer(serializers.ModelSerializer):
-    """Serializer for SpecialProvisionsImage model."""
-    special_provisions_id = serializers.PrimaryKeyRelatedField(
-        queryset=SpecialProvisions.objects.filter(activate=True),
-        source='specialprovisions',
-        write_only=True
-    )
+    """Custom serializer for SpecialProvisionsImage model."""
     class Meta:
         model = SpecialProvisionsImage
-        fields = ['id', 'special_provisions_id', 'image']
+        fields = ['id', 'specialprovisions_code', 'image']
+        extra_kwargs = {
+            'specialprovisions_code': {'write_only': True}
+        }
 
 class ExceptedQuantitiesImageSerializer(serializers.ModelSerializer):
-    """Serializer for ExceptedQuantitiesImage model."""
-    excepted_quantities_id = serializers.PrimaryKeyRelatedField(
-        queryset=ExceptedQuantities.objects.filter(activate=True),
-        source='exceptedquantities',
-        write_only=True
-    )
+    """Custom serializer for ExceptedQuantitiesImage model."""
     class Meta:
         model = ExceptedQuantitiesImage
-        fields = ['id', 'excepted_quantities_id', 'image']
+        fields = ['id', 'exceptedquantities_code', 'image']
+        extra_kwargs = {
+            'exceptedquantities_code': {'write_only': True}
+        }
 
 class PackingInstructionsImageSerializer(serializers.ModelSerializer):
-    """Serializer for PackingInstructionsImage model."""
-    packing_instructions_id = serializers.PrimaryKeyRelatedField(
-        queryset=PackingInstructions.objects.filter(activate=True),
-        source='packinginstructions',
-        write_only=True
-    )
+    """Custom serializer for PackingInstructionsImage model."""
     class Meta:
         model = PackingInstructionsImage
-        fields = ['id', 'packing_instructions_id', 'image']
+        fields = ['id', 'packinginstructions_code', 'image']
+        extra_kwargs = {
+            'packinginstructions_code': {'write_only': True}
+        }
 
 class PackingProvisionsImageSerializer(serializers.ModelSerializer):
-    """Serializer for PackingProvisionsImage model."""
-    packing_provisions_id = serializers.PrimaryKeyRelatedField(
-        queryset=PackingProvisions.objects.filter(activate=True),
-        source='packingprovisions',
-        write_only=True
-    )
+    """Custom serializer for PackingProvisionsImage model."""
     class Meta:
         model = PackingProvisionsImage
-        fields = ['id', 'packing_provisions_id', 'image']
+        fields = ['id', 'packingprovisions_code', 'image']
+        extra_kwargs = {
+            'packingprovisions_code': {'write_only': True}
+        }
 
 class IBCInstructionsImageSerializer(serializers.ModelSerializer):
-    """Serializer for IBCInstructionsImage model."""
-    ibc_instructions_id = serializers.PrimaryKeyRelatedField(
-        queryset=IBCInstructions.objects.filter(activate=True),
-        source='ibcinstructions',
-        write_only=True
-    )
+    """Custom serializer for IBCInstructionsImage model."""
     class Meta:
         model = IBCInstructionsImage
-        fields = ['id', 'ibc_instructions_id', 'image']
+        fields = ['id', 'ibcinstructions_code', 'image']
+        extra_kwargs = {
+            'ibcinstructions_code': {'write_only': True}
+        }
 
 class IBCProvisionsImageSerializer(serializers.ModelSerializer):
-    """Serializer for IBCProvisionsImage model."""
-    ibc_provisions_id = serializers.PrimaryKeyRelatedField(
-        queryset=IBCProvisions.objects.filter(activate=True),
-        source='ibcprovisions',
-        write_only=True
-    )
+    """Custom serializer for IBCProvisionsImage model."""
     class Meta:
         model = IBCProvisionsImage
-        fields = ['id', 'ibc_provisions_id', 'image']
+        fields = ['id', 'ibcprovisions_code', 'image']
+        extra_kwargs = {
+            'ibcprovisions_code': {'write_only': True}
+        }
 
 class TankInstructionsImageSerializer(serializers.ModelSerializer):
-    """Serializer for TankInstructionsImage model."""
-    tank_instructions_id = serializers.PrimaryKeyRelatedField(
-        queryset=TankInstructions.objects.filter(activate=True),
-        source='tankinstructions',
-        write_only=True
-    )
+    """Custom serializer for TankInstructionsImage model."""
     class Meta:
         model = TankInstructionsImage
-        fields = ['id', 'tank_instructions_id', 'image']
+        fields = ['id', 'tankinstructions_code', 'image']
+        extra_kwargs = {
+            'tankinstructions_code': {'write_only': True}
+        }
 
 class TankProvisionsImageSerializer(serializers.ModelSerializer):
-    """Serializer for TankProvisionsImage model."""
-    tank_provisions_id = serializers.PrimaryKeyRelatedField(
-        queryset=TankProvisions.objects.filter(activate=True),
-        source='tankprovisions',
-        write_only=True
-    )
+    """Custom serializer for TankProvisionsImage model."""
     class Meta:
         model = TankProvisionsImage
-        fields = ['id', 'tank_provisions_id', 'image']
+        fields = ['id', 'tankprovisions_code', 'image']
+        extra_kwargs = {
+            'tankprovisions_code': {'write_only': True}
+        }
 
 class EmergencyScheduleImageSerializer(serializers.ModelSerializer):
-    """Serializer for EmergencyScheduleImage model."""
-    emergency_schedule_id = serializers.PrimaryKeyRelatedField(
-        queryset=EmergencySchedule.objects.filter(activate=True),
-        source='emergencyschedule',
-        write_only=True
-    )
+    """Custom serializer for EmergencyScheduleImage model."""
     class Meta:
         model = EmergencyScheduleImage
-        fields = ['id', 'emergency_schedule_id', 'image']
+        fields = ['id', 'emergencyschedule_code', 'image']
+        extra_kwargs = {
+            'emergencyschedule_code': {'write_only': True}
+        }
 
 class StowageHandlingImageSerializer(serializers.ModelSerializer):
-    """Serializer for StowageHandlingImage model."""
-    stowage_handling_id = serializers.PrimaryKeyRelatedField(
-        queryset=StowageHandling.objects.filter(activate=True),
-        source='stowagehandling',
-        write_only=True
-    )
+    """Custom serializer for StowageHandlingImage model."""
     class Meta:
         model = StowageHandlingImage
-        fields = ['id', 'stowage_handling_id', 'image']
+        fields = ['id', 'stowagehandling_code', 'image']
+        extra_kwargs = {
+            'stowagehandling_code': {'write_only': True}
+        }
 
 class SegregationImageSerializer(serializers.ModelSerializer):
-    """Serializer for SegregationImage model."""
-    segregation_id = serializers.PrimaryKeyRelatedField(
-        queryset=Segregation.objects.filter(activate=True),
-        source='segregation',
-        write_only=True
-    )
+    """Custom serializer for SegregationImage model."""
     class Meta:
         model = SegregationImage
-        fields = ['id', 'segregation_id', 'image']
+        fields = ['id', 'segregation_code', 'image']
+        extra_kwargs = {
+            'segregation_code': {'write_only': True}
+        }
 
 class UNCodeSerializer(serializers.ModelSerializer):
     """Custom serializer for UNCode model with bulk creation support."""
-    images = UNCodeImageSerializer(many=True, read_only=True)
     class Meta:
         model = UNCode
         fields = ['id',
                   'code',
-                  'images',
                   'description']
         extra_kwargs = {
         'code': {'validators': []}
@@ -350,7 +313,7 @@ class ClassDivisionGroupListField(serializers.ListField):
 
 class PackingGroupSerializer(serializers.ModelSerializer):
     """Custom serializer for PackingGroup model with bulk creation support."""
-    images = PackingGroupImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = PackingGroup
         fields = ['id',
@@ -362,6 +325,12 @@ class PackingGroupSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+
+    def get_images(self, obj):
+        images_queryset = PackingGroupImage.objects.filter(packinggroup_code=obj.code)
+        serializer = PackingGroupImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
+    
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = PackingGroup.objects.filter(code=code).first()
@@ -377,7 +346,7 @@ class PackingGroupSerializer(serializers.ModelSerializer):
 
 class SpecialProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for SpecialProvisions model with bulk creation support."""
-    images = SpecialProvisionsImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = SpecialProvisions
         fields = ['id',
@@ -388,6 +357,11 @@ class SpecialProvisionsSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+    
+    def get_images(self, obj):
+        images_queryset = SpecialProvisionsImage.objects.filter(specialprovisions_code=obj.code)
+        serializer = SpecialProvisionsImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
             code = validated_data.get('code')
@@ -416,6 +390,11 @@ class ExceptedQuantitiesSerializer(serializers.ModelSerializer):
         }
         list_serializer_class = BaseListSerializer
 
+    def get_images(self, obj):
+        images_queryset = ExceptedQuantitiesImage.objects.filter(exceptedquantities_code=obj.code)
+        serializer = ExceptedQuantitiesImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
+
     def create(self, validated_data):
         code = validated_data.get('code')
         instance = ExceptedQuantities.objects.filter(code=code).first()
@@ -431,7 +410,8 @@ class ExceptedQuantitiesSerializer(serializers.ModelSerializer):
 
 class PackingInstructionsSerializer(serializers.ModelSerializer):
     """Custom serializer for PackingInstructions model with bulk creation support."""
-    images = PackingInstructionsImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = PackingInstructions
         fields = ['id',
@@ -442,6 +422,11 @@ class PackingInstructionsSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+
+    def get_images(self, obj):
+        images_queryset = PackingInstructionsImage.objects.filter(packinginstructions_code=obj.code)
+        serializer = PackingInstructionsImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         code = validated_data.get('code')
@@ -458,7 +443,8 @@ class PackingInstructionsSerializer(serializers.ModelSerializer):
 
 class PackingProvisionsSerializer(serializers.ModelSerializer):
     """"Custom serializer for PackingProvisions model with bulk creation support."""
-    images = PackingProvisionsImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = PackingProvisions
         fields = ['id',
@@ -469,6 +455,11 @@ class PackingProvisionsSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+    
+    def get_images(self, obj):
+        images_queryset = PackingProvisionsImage.objects.filter(packingprovisions_code=obj.code)
+        serializer = PackingProvisionsImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         code = validated_data.get('code')
@@ -485,7 +476,8 @@ class PackingProvisionsSerializer(serializers.ModelSerializer):
 
 class IBCInstructionsSerializer(serializers.ModelSerializer):
     """Custom serializer for IBCInstructions model with bulk creation support."""
-    images = IBCInstructionsImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = IBCInstructions
         fields = ['id',
@@ -496,6 +488,11 @@ class IBCInstructionsSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+
+    def get_images(self, obj):
+        images_queryset = IBCInstructionsImage.objects.filter(ibcinstructions_code=obj.code)
+        serializer = IBCInstructionsImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         code = validated_data.get('code')
@@ -512,7 +509,8 @@ class IBCInstructionsSerializer(serializers.ModelSerializer):
 
 class IBCProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for IBCProvisions model with bulk creation support."""
-    images = IBCProvisionsImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = IBCProvisions
         fields = ['id',
@@ -523,6 +521,11 @@ class IBCProvisionsSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+
+    def get_images(self, obj):
+        images_queryset = IBCProvisionsImage.objects.filter(ibcprovisions_code=obj.code)
+        serializer = IBCProvisionsImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         code = validated_data.get('code')
@@ -539,7 +542,8 @@ class IBCProvisionsSerializer(serializers.ModelSerializer):
 
 class TankInstructionsSerializer(serializers.ModelSerializer):
     """Custom serializer for TankInstructions model with bulk creation support."""
-    images = TankInstructionsImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = TankInstructions
         fields = ['id',
@@ -550,6 +554,11 @@ class TankInstructionsSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+
+    def get_images(self, obj):
+        images_queryset = TankInstructionsImage.objects.filter(tankinstructions_code=obj.code)
+        serializer = TankInstructionsImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         code = validated_data.get('code')
@@ -566,7 +575,8 @@ class TankInstructionsSerializer(serializers.ModelSerializer):
 
 class TankProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for TankProvisions model with bulk creation support."""
-    images = TankProvisionsImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = TankProvisions
         fields = ['id',
@@ -577,6 +587,11 @@ class TankProvisionsSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+
+    def get_images(self, obj):
+        images_queryset = TankProvisionsImage.objects.filter(tankprovisions_code=obj.code)
+        serializer = TankProvisionsImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         code = validated_data.get('code')
@@ -593,7 +608,8 @@ class TankProvisionsSerializer(serializers.ModelSerializer):
 
 class EmergencyScheduleSerializer(serializers.ModelSerializer):
     """Custom serializer for EmergencySchedule model with bulk creation support."""
-    images = EmergencyScheduleImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = EmergencySchedule
         fields = ['id',
@@ -604,6 +620,11 @@ class EmergencyScheduleSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+
+    def get_images(self, obj):
+        images_queryset = EmergencyScheduleImage.objects.filter(emergencyschedule_code=obj.code)
+        serializer = EmergencyScheduleImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         code = validated_data.get('code')
@@ -620,7 +641,8 @@ class EmergencyScheduleSerializer(serializers.ModelSerializer):
 
 class StowageHandlingSerializer(serializers.ModelSerializer):
     """Custom serializer for StowageHandling model with bulk creation support."""
-    images = StowageHandlingImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = StowageHandling
         fields = ['id',
@@ -631,6 +653,11 @@ class StowageHandlingSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+
+    def get_images(self, obj):
+        images_queryset = StowageHandlingImage.objects.filter(stowagehandling_code=obj.code)
+        serializer = StowageHandlingImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         code = validated_data.get('code')
@@ -647,7 +674,7 @@ class StowageHandlingSerializer(serializers.ModelSerializer):
 
 class SegregationSerializer(serializers.ModelSerializer):
     """Custom serializer for Segregation model with bulk creation support."""
-    images = SegregationImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
     class Meta:
         model = Segregation
         fields = ['id',
@@ -658,6 +685,11 @@ class SegregationSerializer(serializers.ModelSerializer):
         'code': {'validators': []}
         }
         list_serializer_class = BaseListSerializer
+
+    def get_images(self, obj):
+        images_queryset = SegregationImage.objects.filter(segregation_code=obj.code)
+        serializer = SegregationImageSerializer(images_queryset, many=True, context=self.context)
+        return serializer.data
 
     def create(self, validated_data):
         code = validated_data.get('code')

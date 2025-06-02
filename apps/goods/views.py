@@ -8,7 +8,7 @@ from .permissions import IsStaffUser, IsUser, DjangoModelPermissionsWithView
 from .pagination import CustomPagination
 
 from .models import (
-    UNCode, UNCodeImage,
+    UNCode,
     Classification,
     Division,
     CompatibilityGroup,
@@ -28,7 +28,7 @@ from .models import (
     DangerousGoods,
 )
 from .serializers import(
-    UNCodeSerializer, UNCodeImageSerializer,
+    UNCodeSerializer,
     ClassificationSerializer,
     DivisionSerializer,
     CompatibilityGroupSerializer,
@@ -1133,45 +1133,17 @@ class SearchDangerousGoodsViewSet(viewsets.ViewSet):
         serializer = DangerousGoodsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-
-class UNCodeImageViewSet(viewsets.ViewSet):
-    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
-    queryset = UNCodeImage.objects.all()
-
-    def create (self, request):
-        """
-        Create a new UN Code Image
-        """
-        serializer = UNCodeImageSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    def partial_update(self, request, pk=None):
-        """
-        Partially update a UN Code Image
-        """
-        instance = get_object_or_404(self.queryset, pk=pk)
-        serializer = UNCodeImageSerializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    def destroy(self, request, pk=None):
-        """
-        Delete a UN Code Image
-        """
-        instance = get_object_or_404(self.queryset, pk=pk)
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
 class PackingGroupImageViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     queryset = PackingGroupImage.objects.all()
 
     def create (self, request):
         """
-        Create a new Packing Group Image
+        Create a new Packing Group Image or multiple Packing Group Images.
         """
-        serializer = PackingGroupImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = PackingGroupImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1198,9 +1170,11 @@ class SpecialProvisionsImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new Special Provisions Image
+        Create a new Special Provision Image or multiple Special Provision Images.
         """
-        serializer = SpecialProvisionsImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = SpecialProvisionsImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1227,9 +1201,11 @@ class ExceptedQuantitiesImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new Excepted Quantities Image
+        Create a new Excepted Quantities Image or multiple Excepted Quantities Images.
         """
-        serializer = ExceptedQuantitiesImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = ExceptedQuantitiesImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1256,9 +1232,11 @@ class PackingInstructionsImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new Packing Instructions Image
+        Create a new Packing Instructions Image or multiple Packing Instructions Images.
         """
-        serializer = PackingInstructionsImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = PackingInstructionsImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1285,9 +1263,11 @@ class PackingProvisionsImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new Packing Provisions Image
+        Create a new Packing Provisions Image or multiple Packing Provisions Images.
         """
-        serializer = PackingProvisionsImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = PackingProvisionsImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1314,9 +1294,11 @@ class IBCInstructionsImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new IBC Instructions Image
+        Create a new IBC Instructions Image or multiple IBC Instructions Images.
         """
-        serializer = IBCInstructionsImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = IBCInstructionsImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1343,9 +1325,11 @@ class IBCProvisionsImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new IBC Provisions Image
+        Create a new IBC Provisions Image or multiple IBC Provisions Images.
         """
-        serializer = IBCProvisionsImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = IBCProvisionsImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1373,9 +1357,11 @@ class TankInstructionsImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new Tank Instructions Image
+        Create a new Tank Instructions Image or multiple Tank Instructions Images.
         """
-        serializer = TankInstructionsImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = TankInstructionsImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1402,9 +1388,11 @@ class TankProvisionsImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new Tank Provisions Image
+        Create a new Packing Provisions Image or multiple Packing Provisions Images.
         """
-        serializer = TankProvisionsImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = PackingProvisionsImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1431,9 +1419,11 @@ class EmergencyScheduleImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new Emergency Schedule Image
+        Create a new Packing Provisions Image or multiple Packing Provisions Images.
         """
-        serializer = EmergencyScheduleImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = PackingProvisionsImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1460,9 +1450,11 @@ class StowageHandlingImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new Stowage Handling Image
+        Create a new Stowage Handling Image or multiple Stowage Handling Images.
         """
-        serializer = StowageHandlingImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = StowageHandlingImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1489,9 +1481,11 @@ class SegregationImageViewSet(viewsets.ViewSet):
 
     def create (self, request):
         """
-        Create a new Segregation Image
+        Create a new Segregation Image or multiple Segregation Images.
         """
-        serializer = SegregationImageSerializer(data=request.data)
+        data = request.data
+        many = isinstance(data, list)
+        serializer = SegregationImageSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)

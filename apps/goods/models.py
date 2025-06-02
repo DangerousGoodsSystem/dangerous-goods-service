@@ -198,80 +198,86 @@ class SegregationBar(models.Model):
         ]
         db_table = 'goods.segregationbar'
 
-class UNCodeImage(models.Model):
-    uncode = models.ForeignKey(UNCode, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='images/uncode/')
-    class Meta:
-        db_table = 'goods.uncodeimage'
-
 class PackingGroupImage(models.Model):
-    packinggroup = models.ForeignKey(PackingGroup, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    packinggroup_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/packinggroup/')
     class Meta:
         db_table = 'goods.packinggroupimage'
 
 class SpecialProvisionsImage(models.Model):
-    specialprovisions = models.ForeignKey(SpecialProvisions, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    specialprovisions_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/specialprovisions/')
     class Meta:
         db_table = 'goods.specialprovisionsimage'
 
 class ExceptedQuantitiesImage(models.Model):
-    exceptedquantities = models.ForeignKey(ExceptedQuantities, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    exceptedquantities_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/exceptedquantities/')
     class Meta:
         db_table = 'goods.exceptedquantitiesimage'
 
 class PackingInstructionsImage(models.Model):
-    packinginstructions = models.ForeignKey(PackingInstructions, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    packinginstructions_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/packinginstructions/')
     class Meta:
         db_table = 'goods.packinginstructionsimage'
 
 class PackingProvisionsImage(models.Model):
-    packingprovisions = models.ForeignKey(PackingProvisions, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    packingprovisions_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/packingprovisions/')
     class Meta:
         db_table = 'goods.packingprovisionsimage'
 
 class IBCInstructionsImage(models.Model):
-    ibcinstructions = models.ForeignKey(IBCInstructions, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    ibcinstructions_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/ibcinstructions/')
     class Meta:
         db_table = 'goods.ibcinstructionsimage'
 
 class IBCProvisionsImage(models.Model):
-    ibcprovisions = models.ForeignKey(IBCProvisions, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    ibcprovisions_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/ibcprovisions/')
     class Meta:
         db_table = 'goods.ibcprovisionsimage'
 
 class TankInstructionsImage(models.Model):
-    tankinstructions = models.ForeignKey(TankInstructions, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    tankinstructions_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/tankinstructions/')
     class Meta:
         db_table = 'goods.tankinstructionsimage'
 
 class TankProvisionsImage(models.Model):
-    tankprovisions = models.ForeignKey(TankProvisions, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    tankprovisions_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/tankprovisions/')
     class Meta:
         db_table = 'goods.tankprovisionsimage'
 
 class EmergencyScheduleImage(models.Model):
-    emergencyschedule = models.ForeignKey(EmergencySchedule, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    emergencyschedule_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/emergencyschedule/')
     class Meta:
         db_table = 'goods.emergencyscheduleimage'
 
 class StowageHandlingImage(models.Model):
-    stowagehandling = models.ForeignKey(StowageHandling, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    stowagehandling_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/stowagehandling/')
     class Meta:
         db_table = 'goods.stowagehandlingimage'
 
 class SegregationImage(models.Model):
-    segregation = models.ForeignKey(Segregation, on_delete=models.CASCADE, related_name='images')
+    id = models.AutoField(primary_key=True)
+    segregation_code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/segregation/')
     class Meta:
         db_table = 'goods.segregationimage'

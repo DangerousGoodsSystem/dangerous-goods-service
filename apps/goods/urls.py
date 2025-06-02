@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    UNCodeViewSet, UNCodeImageViewSet,
+    UNCodeViewSet,
     ClassificationViewSet,
     DivisionViewSet,
     CompatibilityGroupViewSet,
@@ -44,7 +44,6 @@ router.register(r'segregation-bars', SegregationBarViewSet, basename='segregatio
 router.register(r'search-dangerous-goods', SearchDangerousGoodsViewSet, basename='search-dangerous-goods')
 
 # Image viewsets
-router.register(r'un-codes-images', UNCodeImageViewSet, basename='un_codes_images')
 router.register(r'packing-groups-images', PackingGroupImageViewSet, basename='packing_groups_images')
 router.register(r'special-provisions-images', SpecialProvisionsImageViewSet, basename='special_provisions_images')
 router.register(r'excepted-quantities-images', ExceptedQuantitiesImageViewSet, basename='excepted_quantities_images')
