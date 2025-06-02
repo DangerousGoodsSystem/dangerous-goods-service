@@ -200,84 +200,84 @@ class SegregationBar(models.Model):
 
 class PackingGroupImage(models.Model):
     id = models.AutoField(primary_key=True)
-    packinggroup_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/packinggroup/')
     class Meta:
         db_table = 'goods.packinggroupimage'
 
 class SpecialProvisionsImage(models.Model):
     id = models.AutoField(primary_key=True)
-    specialprovisions_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/specialprovisions/')
     class Meta:
         db_table = 'goods.specialprovisionsimage'
 
 class ExceptedQuantitiesImage(models.Model):
     id = models.AutoField(primary_key=True)
-    exceptedquantities_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/exceptedquantities/')
     class Meta:
         db_table = 'goods.exceptedquantitiesimage'
 
 class PackingInstructionsImage(models.Model):
     id = models.AutoField(primary_key=True)
-    packinginstructions_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/packinginstructions/')
     class Meta:
         db_table = 'goods.packinginstructionsimage'
 
 class PackingProvisionsImage(models.Model):
     id = models.AutoField(primary_key=True)
-    packingprovisions_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/packingprovisions/')
     class Meta:
         db_table = 'goods.packingprovisionsimage'
 
 class IBCInstructionsImage(models.Model):
     id = models.AutoField(primary_key=True)
-    ibcinstructions_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/ibcinstructions/')
     class Meta:
         db_table = 'goods.ibcinstructionsimage'
 
 class IBCProvisionsImage(models.Model):
     id = models.AutoField(primary_key=True)
-    ibcprovisions_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/ibcprovisions/')
     class Meta:
         db_table = 'goods.ibcprovisionsimage'
 
 class TankInstructionsImage(models.Model):
     id = models.AutoField(primary_key=True)
-    tankinstructions_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/tankinstructions/')
     class Meta:
         db_table = 'goods.tankinstructionsimage'
 
 class TankProvisionsImage(models.Model):
     id = models.AutoField(primary_key=True)
-    tankprovisions_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/tankprovisions/')
     class Meta:
         db_table = 'goods.tankprovisionsimage'
 
 class EmergencyScheduleImage(models.Model):
     id = models.AutoField(primary_key=True)
-    emergencyschedule_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/emergencyschedule/')
     class Meta:
         db_table = 'goods.emergencyscheduleimage'
 
 class StowageHandlingImage(models.Model):
     id = models.AutoField(primary_key=True)
-    stowagehandling_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/stowagehandling/')
     class Meta:
         db_table = 'goods.stowagehandlingimage'
 
 class SegregationImage(models.Model):
     id = models.AutoField(primary_key=True)
-    segregation_code = models.CharField(max_length=10)
+    code = models.CharField(max_length=10)
     image = models.ImageField(upload_to='images/segregation/')
     class Meta:
         db_table = 'goods.segregationimage'
