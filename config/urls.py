@@ -9,7 +9,7 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('apps.accounts.urls')),
-    path('api/goods/', include('apps.goods.urls')),
+    path('api/imdg/', include('apps.imdg.urls')),
 ]
 
 if settings.DEBUG:
