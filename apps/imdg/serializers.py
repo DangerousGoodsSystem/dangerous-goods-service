@@ -370,24 +370,15 @@ class DangerousGoodsSerializer(serializers.ModelSerializer):
                   ]
         list_serializer_class = BaseListSerializer
 
-    def to_representation(self, instance):
-        """
-        Ghi đè để thêm các trường tính toán khi retrieve.
-        """
-        # 1. Lấy dữ liệu gốc từ các trường trong Meta.fields
+    def to_representation(self, instance):  
         representation = super().to_representation(instance)
-        
-        # 2. KIỂM TRA: Chỉ thực hiện logic phức tạp nếu đây là hành động 'retrieve'
-        # `self.context` được DRF tự động truyền vào từ ViewSet.
         view = self.context.get('view')
+
         if view and view.action == 'retrieve':
-            # 3. Khởi tạo và gọi service để lấy dữ liệu tính toán thêm
             lookup_service = IMDGLookupService()
             computed_data = lookup_service.get_computed_details(instance)
-            
-            # 4. Hợp nhất dữ liệu tính toán vào kết quả cuối cùng
             representation.update(computed_data)
-            
+
         return representation
 
 

@@ -1412,5 +1412,6 @@ class SearchDangerousGoodsViewSet(viewsets.ViewSet):
         Retrieve a Dangerous Good by its primary key
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = DangerousGoodsSerializer(instance)
+        context = {'request': request, 'view': self}
+        serializer = DangerousGoodsSerializer(instance, context=context)
         return Response(serializer.data, status=status.HTTP_200_OK)
