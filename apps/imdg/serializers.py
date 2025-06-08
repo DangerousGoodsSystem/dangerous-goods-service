@@ -1,11 +1,9 @@
-from django.conf import settings
 from rest_framework import serializers
+from .services import IMDGLookupService
 from .models import (
     IMDGAmendment,
     UNCode,
-    Classification,
-    Division,
-    CompatibilityGroup,
+    ClassDivision,
     PackingGroup,
     SpecialProvisions,
     ExceptedQuantities,
@@ -18,6 +16,7 @@ from .models import (
     EmergencySchedules,
     StowageHandling,
     Segregation,
+    SegregationRule,
     DangerousGoods,
 )
 
@@ -44,16 +43,17 @@ class BaseListSerializer(serializers.ListSerializer):
             'errors': errors
         })
 
+
 class IMDGAmendmentSerializer(serializers.ModelSerializer):
     """Serializer for IMDGAmendment model."""
     class Meta:
         model = IMDGAmendment
         fields = ['id',
-                  'file',
                   'name',
-                  'upload_at',
-                  'is_effective']
+                  'is_effective',
+                  'upload_at']
         list_serializer_class = BaseListSerializer
+
 
 class UNCodeSerializer(serializers.ModelSerializer):
     """Custom serializer for UNCode model with bulk creation support."""
@@ -70,7 +70,8 @@ class UNCodeSerializer(serializers.ModelSerializer):
                   'description']
         list_serializer_class = BaseListSerializer
 
-class ClassificationSerializer(serializers.ModelSerializer):
+
+class ClassDivisionSerializer(serializers.ModelSerializer):
     """Custom serializer for Classification model with bulk creation support."""
     imdg_amendment_id = serializers.PrimaryKeyRelatedField(
         queryset=IMDGAmendment.objects.all(),
@@ -78,59 +79,14 @@ class ClassificationSerializer(serializers.ModelSerializer):
         write_only=True
     )
     class Meta:
-        model = Classification
+        model = ClassDivision
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'label', 'description']
-        list_serializer_class = BaseListSerializer
-
-
-class DivisionSerializer(serializers.ModelSerializer):
-    """Custom serializer for Division model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
-    classification_id = serializers.PrimaryKeyRelatedField(
-        queryset=Classification.objects.all(),
-        source='classification',
-        write_only=True
-    )
-    classification = ClassificationSerializer(read_only=True)
-
-    class Meta:
-        model = Division
-        fields = ['id',
-                  'imdg_amendment_id',
-                  'classification_id', 'classification',
-                  'code',
-                  'label', 'description']
-        list_serializer_class = BaseListSerializer
-
-class CompatibilityGroupSerializer(serializers.ModelSerializer):
-    """Custom serializer for CompatibilityGroup model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
-    division_id = serializers.PrimaryKeyRelatedField(
-        queryset=Division.objects.all(),
-        source='division',
-        write_only=True
-    )
-    division = DivisionSerializer(read_only=True)
-
-    class Meta:
-        model = CompatibilityGroup
-        fields = ['id',
-                  'imdg_amendment_id',
-                  'division_id', 'division',
-                  'code',
+                  'label',
                   'description']
         list_serializer_class = BaseListSerializer
+
 
 class PackingGroupSerializer(serializers.ModelSerializer):
     """Custom serializer for PackingGroup model with bulk creation support."""
@@ -139,53 +95,15 @@ class PackingGroupSerializer(serializers.ModelSerializer):
         source='imdgamendment',
         write_only=True
     )
-
     class Meta:
         model = PackingGroup
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description',
                   ]
         list_serializer_class = BaseListSerializer
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 
 class SpecialProvisionsSerializer(serializers.ModelSerializer):
@@ -200,46 +118,10 @@ class SpecialProvisionsSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 class ExceptedQuantitiesSerializer(serializers.ModelSerializer):
     """Custom serializer for ExceptedQuantities model with bulk creation support."""
@@ -253,46 +135,9 @@ class ExceptedQuantitiesSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 class PackingInstructionsSerializer(serializers.ModelSerializer):
     """Custom serializer for PackingInstructions model with bulk creation support."""
@@ -306,46 +151,10 @@ class PackingInstructionsSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 class PackingProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for PackingProvisions model with bulk creation support."""
@@ -359,47 +168,11 @@ class PackingProvisionsSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
 
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
-        
 class IBCInstructionsSerializer(serializers.ModelSerializer):
     """Custom serializer for IBCInstructions model with bulk creation support."""
     imdg_amendment_id = serializers.PrimaryKeyRelatedField(
@@ -412,46 +185,10 @@ class IBCInstructionsSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 class IBCProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for IBCProvisions model with bulk creation support."""
@@ -465,46 +202,10 @@ class IBCProvisionsSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
     
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 class TankInstructionsSerializer(serializers.ModelSerializer):
     """Custom serializer for Tank Instructions model with bulk creation support."""
@@ -518,46 +219,10 @@ class TankInstructionsSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
     
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 class TankProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for Tank Provisions model with bulk creation support."""
@@ -571,46 +236,10 @@ class TankProvisionsSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 class EmergencySchedulesSerializer(serializers.ModelSerializer):
     """Custom serializer for Emergency SChedule model with bulk creation support."""
@@ -624,46 +253,10 @@ class EmergencySchedulesSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
     
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 class StowageHandlingSerializer(serializers.ModelSerializer):
     """Custom serializer for Stowage Handling model with bulk creation support."""
@@ -677,46 +270,10 @@ class StowageHandlingSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
     
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
 
 class SegregationSerializer(serializers.ModelSerializer):
     """Custom serializer for SpecialProvisions model with bulk creation support."""
@@ -730,47 +287,56 @@ class SegregationSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'imdg_amendment_id',
                   'code',
-                  'pdf_regions',
+                  'file',
                   'description']
         list_serializer_class = BaseListSerializer
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
+class SegregationRuleSerializer(serializers.ModelSerializer):
+    """Custom serializer for SegregationBar model."""
+    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
+        queryset=IMDGAmendment.objects.all(),
+        source='imdgamendment',
+        write_only=True
+    )
+    from_class_id = serializers.PrimaryKeyRelatedField(
+        queryset=ClassDivision.objects.all(),
+        source='fromclass',
+        write_only=True
+    )
+    to_class_id = serializers.PrimaryKeyRelatedField(
+        queryset=ClassDivision.objects.all(),
+        source='toclass',
+        write_only=True
+    )
+    from_class = ClassDivisionSerializer(
+        read_only=True, 
+        source='fromclass'
+    )
+    to_class = ClassDivisionSerializer(
+        read_only=True, 
+        source='toclass'
+    )
+    class Meta:
+        model = SegregationRule
+        fields = ['id',
+                  'imdg_amendment_id',
+                  'from_class_id', 'from_class',
+                  'to_class_id', 'to_class',
+                  'requirement']
+        list_serializer_class = BaseListSerializer
+
+    def validate(self, data):
+        existing_rule = SegregationRule.objects.filter(
+            imdgamendment=data.get('imdgamendment'),
+            fromclass=data.get('fromclass'),
+            toclass=data.get('toclass')
+        ).exists()
+        if existing_rule:
+            raise serializers.ValidationError(
+                "Segregation rule for this combination already exists."
+            )
         
-        if not hasattr(instance, 'imdgamendment') or \
-           not instance.imdgamendment or \
-           not instance.imdgamendment.pages_directory_path:
-            return representation
-
-        pages_directory_path = instance.imdgamendment.pages_directory_path
-        
-        original_pdf_regions = representation.get('pdf_regions')
-
-        if not isinstance(original_pdf_regions, list):
-            return representation
-
-        transformed_pdf_regions = []
-        for region_data in original_pdf_regions:
-            page_number = region_data.get('number_page') 
-            coordinates = region_data.get('coordinates')
-
-            if page_number is not None:
-                media_url = settings.MEDIA_URL
-                file_specific_path = f"{pages_directory_path}/{page_number}.pdf"
-                link = f"{media_url}{file_specific_path}"
-                
-                transformed_pdf_regions.append({
-                    'number_page': page_number,
-                    'coordinates': coordinates,
-                    'link_pdf': link
-                    
-                })
-            else:
-                transformed_pdf_regions.append(region_data) 
-        
-        representation['pdf_regions'] = transformed_pdf_regions
-        return representation
-
+        return data
 
 class DangerousGoodsSerializer(serializers.ModelSerializer):
     """Custom serializer for DangerousGoods model."""
@@ -779,7 +345,6 @@ class DangerousGoodsSerializer(serializers.ModelSerializer):
         source='imdgamendment',
         write_only=True
     )
-    
     class Meta:
         model = DangerousGoods
         fields = ['id',
@@ -803,6 +368,26 @@ class DangerousGoodsSerializer(serializers.ModelSerializer):
                   'segregation_codes',
                   'observations',
                   ]
-        
         list_serializer_class = BaseListSerializer
+
+    def to_representation(self, instance):
+        """
+        Ghi đè để thêm các trường tính toán khi retrieve.
+        """
+        # 1. Lấy dữ liệu gốc từ các trường trong Meta.fields
+        representation = super().to_representation(instance)
+        
+        # 2. KIỂM TRA: Chỉ thực hiện logic phức tạp nếu đây là hành động 'retrieve'
+        # `self.context` được DRF tự động truyền vào từ ViewSet.
+        view = self.context.get('view')
+        if view and view.action == 'retrieve':
+            # 3. Khởi tạo và gọi service để lấy dữ liệu tính toán thêm
+            lookup_service = IMDGLookupService()
+            computed_data = lookup_service.get_computed_details(instance)
+            
+            # 4. Hợp nhất dữ liệu tính toán vào kết quả cuối cùng
+            representation.update(computed_data)
+            
+        return representation
+
 

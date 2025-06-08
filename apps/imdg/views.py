@@ -10,9 +10,7 @@ from .pagination import CustomPagination
 from .models import (
     IMDGAmendment,
     UNCode,
-    Classification,
-    Division,
-    CompatibilityGroup,
+    ClassDivision,
     PackingGroup,
     SpecialProvisions,
     ExceptedQuantities,
@@ -25,14 +23,13 @@ from .models import (
     EmergencySchedules, 
     StowageHandling,
     Segregation,
+    SegregationRule,
     DangerousGoods,
 )
 from .serializers import(
     IMDGAmendmentSerializer,
     UNCodeSerializer,
-    ClassificationSerializer,
-    DivisionSerializer,
-    CompatibilityGroupSerializer,
+    ClassDivisionSerializer,
     PackingGroupSerializer,
     SpecialProvisionsSerializer,
     ExceptedQuantitiesSerializer,
@@ -45,6 +42,7 @@ from .serializers import(
     EmergencySchedulesSerializer,
     StowageHandlingSerializer,
     SegregationSerializer,
+    SegregationRuleSerializer,
     DangerousGoodsSerializer,
 )
 
@@ -161,32 +159,62 @@ class UNCodeViewSet(viewsets.ViewSet):
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-class ClassificationViewSet(viewsets.ViewSet):
+class ClassDivisionViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
     def get_queryset(self, imdg_amendment_id=None):
-        queryset = Classification.objects.all()
+        queryset = ClassDivision.objects.all()
         if imdg_amendment_id is not None:
             queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
         return queryset
 
     def list(self, request):
         """
-        List all Classifications
+        List all Class Divisions
         """
         imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
         classifications = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(classifications, request)
-        serializer = ClassificationSerializer(page, many=True)
+        serializer = ClassDivisionSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
     def retrieve(self, request, pk=None):
         """
         Retrieve a Classification by its primary key
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = ClassificationSerializer(instance)
+        serializer = ClassDivisionSerializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    @action(detail=False, methods=['get'], url_path='get-by-code', permission_classes=[IsUser])
+    def get_by_code(self, request):
+        """
+        Retrieve a Class Division by its code, but only from the effective IMDG Amendment.
+        """
+        code_param = request.query_params.get('code', None)
+        if not code_param:
+            return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
+        except IMDGAmendment.DoesNotExist:
+            return Response(
+                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except IMDGAmendment.MultipleObjectsReturned:
+            return Response(
+                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        base_queryset = self.get_queryset() 
+        instance = get_object_or_404(
+            base_queryset, 
+            imdgamendment=effective_amendment, 
+            code=code_param
+        )
+        
+        serializer = ClassDivisionSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
         """
@@ -194,7 +222,7 @@ class ClassificationViewSet(viewsets.ViewSet):
         """
         data = request.data
         many = isinstance(data, list)
-        serializer = ClassificationSerializer(data=data, many=many)
+        serializer = ClassDivisionSerializer(data=data, many=many)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -203,124 +231,13 @@ class ClassificationViewSet(viewsets.ViewSet):
         Partially update a Classification
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = ClassificationSerializer(instance, data=request.data, partial=True)
+        serializer = ClassDivisionSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     def destroy(self, request, pk=None):
         """
         Delete a Classification
-        """
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-class DivisionViewSet(viewsets.ViewSet):
-    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
-    pagination_class = CustomPagination
-
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = Division.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
-
-    def list(self, request):
-        """
-        List all Divisions
-        """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        divisions = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(divisions, request)
-        serializer = DivisionSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
-    def retrieve(self, request, pk=None):
-        """
-        Retrieve a Division by its primary key
-        """
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = DivisionSerializer(instance)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    def create(self, request):
-        """
-        Create a new Division
-        """
-        data = request.data
-        many = isinstance(data, list)
-        serializer = DivisionSerializer(data=data, many=many)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    def partial_update(self, request, pk=None):
-        """
-        Partially update a Division
-        """
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = DivisionSerializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    def destroy(self, request, pk=None):
-        """
-        Delete a Division
-        """
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-"""
-Compatibility Group ViewSet
-"""
-class CompatibilityGroupViewSet(viewsets.ViewSet):
-    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
-    pagination_class = CustomPagination
-
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = CompatibilityGroup.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
-
-    def list(self, request):
-        """
-        List all Compatibility Groups
-        """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        compatibility_groups = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(compatibility_groups, request)
-        serializer = CompatibilityGroupSerializer(page, many=True)
-        return paginator.get_paginated_response(serializer.data)
-    def retrieve(self, request, pk=None):
-        """
-        Retrieve a Compatibility Group by its primary key
-        """
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = CompatibilityGroupSerializer(instance)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    def create(self, request):
-        """
-        Create a new Compatibility Group
-        """
-        data = request.data
-        many = isinstance(data, list)
-        serializer = CompatibilityGroupSerializer(data=data, many=many)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    def partial_update(self, request, pk=None):
-        """
-        Partially update a Compatibility Group
-        """
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        serializer = CompatibilityGroupSerializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    def destroy(self, request, pk=None):
-        """
-        Delete a Compatibility Group
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
@@ -1361,6 +1278,50 @@ class SegregationViewSet(viewsets.ViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
+Segregation Rule ViewSet
+"""
+class SegregationRuleViewSet(viewsets.ViewSet):
+    permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
+
+    def get_queryset(self, imdg_amendment_id=None):
+        queryset = SegregationRule.objects.all()
+        if imdg_amendment_id is not None:
+            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
+        return queryset
+    
+    def list(self, request):
+        """List all Segregation Bars"""
+        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
+        segregation_bars = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        serializer = SegregationRuleSerializer(segregation_bars, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def retrieve(self, request, pk=None):
+        """Retrieve a Segregation Bar by its primary key"""
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        serializer = SegregationRuleSerializer(instance, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def create(self, request):
+        """Create a new Segregation Bar or a list of Segregation Bars"""
+        data = request.data
+        many = isinstance(data, list)
+        serializer = SegregationRuleSerializer(data=data, many=many, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def partial_update(self, request, pk=None):
+        """Partially update a Segregation Bar"""
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        serializer = SegregationRuleSerializer(instance, data=request.data, partial=True, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    def destroy(self, request, pk=None):
+        """Delete a Segregation Bar"""
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+"""
 Dangerous Goods ViewSet
 """
 class DangerousGoodsViewSet(viewsets.ViewSet):
@@ -1372,7 +1333,7 @@ class DangerousGoodsViewSet(viewsets.ViewSet):
         if imdg_amendment_id is not None:
             queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
         return queryset
-
+    
     def list(self, request):
         """
         List all Dangerous Goods
@@ -1430,7 +1391,6 @@ class SearchDangerousGoodsViewSet(viewsets.ViewSet):
             return DangerousGoods.objects.none()
         queryset = DangerousGoods.objects.filter(imdgamendment=effective_amendment)
         return queryset
-
 
     def list(self, request):
         """
