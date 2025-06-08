@@ -10,10 +10,11 @@ class LoginSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(max_length=255, read_only=True)
     access_token = serializers.CharField(max_length=255, read_only=True)
     refresh_token = serializers.CharField(max_length=255, read_only=True)
+    roles = serializers.DictField(read_only=True)
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'full_name', 'access_token', 'refresh_token']
+        fields = ['email', 'password', 'full_name', 'access_token', 'refresh_token', 'roles']
 
     
     def validate(self, attrs):
@@ -29,10 +30,15 @@ class LoginSerializer(serializers.ModelSerializer):
             raise AuthenticationFailed('Email is not verified')
         tokens = RefreshToken.for_user(user)
         return {
-            'email':user.email,
-            'full_name':user.get_full_name,
-            'access_token':str(tokens.access_token),
-            'refresh_token':str(tokens)
+            'email': user.email,
+            'full_name': user.get_full_name,
+            'roles': {
+                'is_superuser': user.is_superuser,
+                'is_staff': user.is_staff,    
+                'is_customer': not user.is_staff and not user.is_superuser
+            },
+            'access_token': str(tokens.access_token),
+            'refresh_token': str(tokens)
         }
 
     
