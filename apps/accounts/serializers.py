@@ -10,17 +10,23 @@ class LoginSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(max_length=255, read_only=True)
     access_token = serializers.CharField(max_length=255, read_only=True)
     refresh_token = serializers.CharField(max_length=255, read_only=True)
-    roles = serializers.DictField(read_only=True)
+    role = serializers.CharField(max_length=10, read_only=True) 
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'full_name', 'access_token', 'refresh_token', 'roles']
-
+        fields = ['email', 'password', 'full_name', 'access_token', 'refresh_token', 'role']
     
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
         request = self.context.get('request')
+        def get_user_role(user):
+            if user.is_superuser:
+                return 'admin'
+            elif user.is_staff:
+                return 'staff'
+            else:
+                return 'customer'
         user = authenticate(request, email=email, password=password)
         if not user:
             raise AuthenticationFailed('invalid credential try again')
@@ -32,11 +38,7 @@ class LoginSerializer(serializers.ModelSerializer):
         return {
             'email': user.email,
             'full_name': user.get_full_name,
-            'roles': {
-                'is_superuser': user.is_superuser,
-                'is_staff': user.is_staff,    
-                'is_customer': not user.is_staff and not user.is_superuser
-            },
+            'role':get_user_role(user),
             'access_token': str(tokens.access_token),
             'refresh_token': str(tokens)
         }
