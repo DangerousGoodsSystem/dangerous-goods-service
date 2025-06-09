@@ -21,7 +21,7 @@ class UNCode(models.Model):
     id = models.AutoField(primary_key=True)
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='uncodes')
     code = models.CharField(max_length=4)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -37,8 +37,7 @@ class ClassDivision(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='classdivisions')
     code = models.CharField(max_length=10)
     label = models.ImageField(upload_to='pictures/imdg/classdivisions/', null=True, blank=True)
-    file = models.FileField(upload_to='documents/imdg/classdivisions/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -55,7 +54,7 @@ class PackingGroup(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='packing_groups')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/packinggroups/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -71,7 +70,7 @@ class SpecialProvisions(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='special_provisions')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/specialprovisions/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -87,7 +86,7 @@ class ExceptedQuantities(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='excepted_quantities')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/exceptedquantities/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -103,7 +102,7 @@ class PackingInstructions(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='packing_instructions')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/packinginstructions/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -119,7 +118,7 @@ class PackingProvisions(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='packing_provisions')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/packingprovisions/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -135,7 +134,7 @@ class IBCInstructions(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='ibc_instructions')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/ibcinstructions/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -151,7 +150,7 @@ class IBCProvisions(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='ibc_provisions')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/ibcprovisions/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -167,7 +166,7 @@ class TankInstructions(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='tank_instructions')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/tankinstructions/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -183,7 +182,7 @@ class TankProvisions(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='tank_provisions')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/tankprovisions/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -199,7 +198,7 @@ class EmergencySchedules(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='emergency_schedules')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/emergencyschedules/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -215,7 +214,7 @@ class StowageHandling(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='stowage_handlings')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/stowagehandling/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -231,7 +230,7 @@ class Segregation(models.Model):
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='segregations')
     code = models.CharField(max_length=10)
     file = models.FileField(upload_to='documents/imdg/segregations/', null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = models.JSONField(null=True, blank=True)
     upload_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -244,12 +243,12 @@ class Segregation(models.Model):
 
 class SegregationRule(models.Model):
     SEGREGATION_REQUIREMENT_CHOICES = [
-    ('1', '1 - Away from'),
-    ('2', '2 - Separated from'),
-    ('3', '3 - Separated by a complete compartment or hold from'),
-    ('4', '4 - Separated longitudinally by an intervening complete compartment or hold from'),
-    ('X', 'X - No general segregation provisions apply. Check DGL.'),
-    ('*', '* - See compatibility group requirements for explosives.'),
+        ('1', '1 - Away from'),
+        ('2', '2 - Separated from'),
+        ('3', '3 - Separated by a complete compartment or hold from'),
+        ('4', '4 - Separated longitudinally by an intervening complete compartment or hold from'),
+        ('X', 'X - No general segregation provisions apply. Check DGL.'),
+        ('*', '* - See compatibility group requirements for explosives.'),
     ]
     id = models.AutoField(primary_key=True)
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='segregation_bars')
@@ -271,7 +270,6 @@ class DangerousGoods(models.Model):
     id = models.BigAutoField(primary_key=True)
     imdgamendment = models.ForeignKey(IMDGAmendment, on_delete=models.CASCADE, related_name='dangerousgoods')
     un_code = models.CharField(max_length=4, null=True, blank=True)
-    un_description = models.TextField(null=True, blank=True)
     proper_shipping_name = models.TextField(null=True, blank=True)
     class_division_code = models.CharField(max_length=10, null=True, blank=True)
     subsidiary_hazards_codes = models.JSONField(null=True, blank=True)
