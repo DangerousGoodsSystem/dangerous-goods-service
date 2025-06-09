@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from rest_framework import serializers
 from .services import IMDGLookupService
 from .models import (
@@ -20,30 +21,6 @@ from .models import (
     DangerousGoods,
 )
 
-class BaseListSerializer(serializers.ListSerializer):
-    """
-    Custom ListSerializer to handle bulk creation with detailed error reporting.
-    """
-    def create(self, validated_data):
-        instances = []
-        errors = []
-        for idx, item_data in enumerate(validated_data):
-            try:
-                inst = self.child.create(item_data)
-                instances.append(inst)
-                errors.append(None)
-            except serializers.ValidationError as exc:
-                errors.append(exc.detail)
-                instances.append(None)
-        if not any(errors):
-            return instances
-
-        raise serializers.ValidationError({
-            'results': instances,
-            'errors': errors
-        })
-
-
 class IMDGAmendmentSerializer(serializers.ModelSerializer):
     """Serializer for IMDGAmendment model."""
     class Meta:
@@ -52,176 +29,272 @@ class IMDGAmendmentSerializer(serializers.ModelSerializer):
                   'name',
                   'is_effective',
                   'upload_at']
-        list_serializer_class = BaseListSerializer
 
+class BaseListSerializer(serializers.ListSerializer):
+    """
+    Custom ListSerializer to handle bulk creation with detailed error reporting.
+    """
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        
+        instances = []
+        errors = []
+        for idx, item_data in enumerate(validated_data):
+            item_data['imdgamendment'] = lookup_service.active_amendment
+            try:
+                inst = self.child.create(item_data)
+                instances.append(inst)
+                errors.append(None)
+            except serializers.ValidationError as exc:
+                errors.append(exc.detail)
+                instances.append(None)
+
+        if not any(errors):
+            return instances
+
+        raise serializers.ValidationError({
+            'results': instances,
+            'errors': errors
+        })
 
 class UNCodeSerializer(serializers.ModelSerializer):
     """Custom serializer for UNCode model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = UNCode
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'description']
         list_serializer_class = BaseListSerializer
+    
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
 
 
 class ClassDivisionSerializer(serializers.ModelSerializer):
     """Custom serializer for Classification model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = ClassDivision
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'label',
                   'description']
         list_serializer_class = BaseListSerializer
 
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
+
 
 class PackingGroupSerializer(serializers.ModelSerializer):
     """Custom serializer for PackingGroup model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = PackingGroup
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description',
                   ]
         list_serializer_class = BaseListSerializer
 
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
+
 
 class SpecialProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for SpecialProvisions model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = SpecialProvisions
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
+
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
 
 
 class ExceptedQuantitiesSerializer(serializers.ModelSerializer):
     """Custom serializer for ExceptedQuantities model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = ExceptedQuantities
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
 
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
+
 class PackingInstructionsSerializer(serializers.ModelSerializer):
     """Custom serializer for PackingInstructions model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = PackingInstructions
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
+
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
 
 
 class PackingProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for PackingProvisions model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = PackingProvisions
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
+
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
 
 
 class IBCInstructionsSerializer(serializers.ModelSerializer):
     """Custom serializer for IBCInstructions model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = IBCInstructions
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
 
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
 
 class IBCProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for IBCProvisions model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = IBCProvisions
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
+
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
     
 
 class TankInstructionsSerializer(serializers.ModelSerializer):
     """Custom serializer for Tank Instructions model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = TankInstructions
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
+
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
     
 
 class TankProvisionsSerializer(serializers.ModelSerializer):
@@ -234,70 +307,97 @@ class TankProvisionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = TankProvisions
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
+
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
 
 
 class EmergencySchedulesSerializer(serializers.ModelSerializer):
     """Custom serializer for Emergency SChedule model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = EmergencySchedules
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
+
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
     
 
 class StowageHandlingSerializer(serializers.ModelSerializer):
     """Custom serializer for Stowage Handling model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = StowageHandling
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
-    
 
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
+    
 class SegregationSerializer(serializers.ModelSerializer):
     """Custom serializer for SpecialProvisions model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = Segregation
         fields = ['id',
-                  'imdg_amendment_id',
                   'code',
                   'file',
                   'description']
         list_serializer_class = BaseListSerializer
 
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        
+        try:
+            return super().create(validated_data)
+        except IntegrityError as e:
+            raise serializers.ValidationError({
+                'code': ['This code already exists in the current amendment.']
+            }) from e
+
 class SegregationRuleSerializer(serializers.ModelSerializer):
     """Custom serializer for SegregationBar model."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     from_class_id = serializers.PrimaryKeyRelatedField(
         queryset=ClassDivision.objects.all(),
         source='fromclass',
@@ -319,7 +419,6 @@ class SegregationRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = SegregationRule
         fields = ['id',
-                  'imdg_amendment_id',
                   'from_class_id', 'from_class',
                   'to_class_id', 'to_class',
                   'requirement']
@@ -337,18 +436,19 @@ class SegregationRuleSerializer(serializers.ModelSerializer):
             )
         
         return data
+    
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        return super().create(validated_data)
 
 class DangerousGoodsSerializer(serializers.ModelSerializer):
     """Custom serializer for DangerousGoods model."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = DangerousGoods
         fields = ['id',
-                  'imdg_amendment_id',
                   'un_code',
                   'proper_shipping_name',
                   'class_division_code',
@@ -380,5 +480,12 @@ class DangerousGoodsSerializer(serializers.ModelSerializer):
             representation.update(computed_data)
 
         return representation
+    
+    def create(self, validated_data):
+        lookup_service = IMDGLookupService()
+        if not lookup_service.active_amendment:
+            raise serializers.ValidationError("No active amendment found.")
+        validated_data['imdgamendment'] = lookup_service.active_amendment
+        return super().create(validated_data)
 
 

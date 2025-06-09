@@ -6,7 +6,6 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from .permissions import IsStaffUser, IsUser, DjangoModelPermissionsWithView
 from .pagination import CustomPagination
-
 from .models import (
     IMDGAmendment,
     UNCode,
@@ -89,16 +88,15 @@ class UNCodeViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = UNCode.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return UNCode.objects.none()
+        return UNCode.objects.filter(imdgamendment=active_amendment)
     
     def list(self, request):
         """List all UN Codes"""
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        un_codes = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        un_codes = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(un_codes, request)
         serializer = UNCodeSerializer(page, many=True)
@@ -111,31 +109,12 @@ class UNCodeViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['get'], url_path='get-by-code', permission_classes=[IsUser])
     def get_by_code(self, request):
         """
-        Retrieve a UN Code by its code, but only from the effective IMDG Amendment.
+        Retrieve a UN Code by its code, using the effective IMDG Amendment.
         """
-        code_param = request.query_params.get('code', None)
+        code_param = request.query_params.get('code')
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
-        
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = UNCodeSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -163,18 +142,17 @@ class ClassDivisionViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = ClassDivision.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return ClassDivision.objects.none()
+        return ClassDivision.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
         List all Class Divisions
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        classifications = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        classifications = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(classifications, request)
         serializer = ClassDivisionSerializer(page, many=True)
@@ -194,26 +172,7 @@ class ClassDivisionViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
-        
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = ClassDivisionSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -250,18 +209,17 @@ class PackingGroupViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = PackingGroup.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return PackingGroup.objects.none()
+        return PackingGroup.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
         List all Packing Groups
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        packing_groups = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        packing_groups = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(packing_groups, request)
         serializer = PackingGroupSerializer(page, many=True)
@@ -281,26 +239,7 @@ class PackingGroupViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
-        
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = PackingGroupSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -337,18 +276,17 @@ class SpecialProvisionsViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = SpecialProvisions.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return SpecialProvisions.objects.none()
+        return SpecialProvisions.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
         List all Special Provisions
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        special_provisions = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        special_provisions = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(special_provisions, request)
         serializer = SpecialProvisionsSerializer(page, many=True)
@@ -368,25 +306,7 @@ class SpecialProvisionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = SpecialProvisionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -423,18 +343,17 @@ class ExceptedQuantitiesViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = ExceptedQuantities.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
-
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return ExceptedQuantities.objects.none()
+        return ExceptedQuantities.objects.filter(imdgamendment=active_amendment)
+    
     def list(self, request):
         """
         List all Excepted Quantities
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        excepted_quantities = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        excepted_quantities = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(excepted_quantities, request)
         serializer = ExceptedQuantitiesSerializer(page, many=True)
@@ -454,25 +373,7 @@ class ExceptedQuantitiesViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = ExceptedQuantitiesSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -509,18 +410,17 @@ class PackingInstructionsViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = PackingInstructions.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return PackingInstructions.objects.none()
+        return PackingInstructions.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
         List all Packing Instructions
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        packing_instructions = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        packing_instructions = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(packing_instructions, request)
         serializer = PackingInstructionsSerializer(page, many=True)
@@ -540,25 +440,7 @@ class PackingInstructionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = PackingInstructionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -595,18 +477,17 @@ class PackingProvisionsViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = PackingProvisions.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return PackingProvisions.objects.none()
+        return PackingProvisions.objects.filter(imdgamendment=active_amendment)
     
     def list(self, request):
         """
         List all Packing Provisions
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        packing_provisions = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        packing_provisions = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(packing_provisions, request)
         serializer = PackingProvisionsSerializer(page, many=True)
@@ -626,25 +507,7 @@ class PackingProvisionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = PackingProvisionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -681,18 +544,17 @@ class IBCInstructionsViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = IBCInstructions.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
-
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return IBCInstructions.objects.none()
+        return IBCInstructions.objects.filter(imdgamendment=active_amendment)
+    
     def list(self, request):
         """
         List all IBC Instructions
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        ibc_instructions = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        ibc_instructions = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(ibc_instructions, request)
         serializer = IBCInstructionsSerializer(page, many=True)
@@ -712,25 +574,7 @@ class IBCInstructionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = IBCInstructionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -767,18 +611,17 @@ class IBCProvisionsViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = IBCProvisions.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return IBCProvisions.objects.none()
+        return IBCProvisions.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
         List all IBC Provisions
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        ibc_provisions = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        ibc_provisions = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(ibc_provisions, request)
         serializer = IBCProvisionsSerializer(page, many=True)
@@ -791,25 +634,7 @@ class IBCProvisionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = IBCProvisionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def retrieve(self, request, pk=None):
@@ -854,18 +679,17 @@ class TankInstructionsViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = TankInstructions.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return TankInstructions.objects.none()
+        return TankInstructions.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
         List all Tank Instructions
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        tank_instructions = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        tank_instructions = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(tank_instructions, request)
         serializer = TankInstructionsSerializer(page, many=True)
@@ -885,25 +709,7 @@ class TankInstructionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = TankInstructionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -940,18 +746,17 @@ class TankProvisionsViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = TankProvisions.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return TankProvisions.objects.none()
+        return TankProvisions.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
         List all Tank Provisions
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        tank_provisions = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        tank_provisions = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(tank_provisions, request)
         serializer = TankProvisionsSerializer(page, many=True)
@@ -971,25 +776,7 @@ class TankProvisionsViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = TankProvisionsSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -1026,18 +813,17 @@ class EmergencySchedulesViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = EmergencySchedules.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return EmergencySchedules.objects.none()
+        return EmergencySchedules.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
         List all Emergency Schedules
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        emergency_schedules = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        emergency_schedules = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(emergency_schedules, request)
         serializer = EmergencySchedulesSerializer(page, many=True)
@@ -1057,25 +843,7 @@ class EmergencySchedulesViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = EmergencySchedulesSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -1112,18 +880,17 @@ class StowageHandlingViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = StowageHandling.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return StowageHandling.objects.none()
+        return StowageHandling.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
         List all Stowage Handlings
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        stowage_handlings = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        stowage_handlings = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(stowage_handlings, request)
         serializer = StowageHandlingSerializer(page, many=True)
@@ -1143,25 +910,7 @@ class StowageHandlingViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = StowageHandlingSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -1198,18 +947,17 @@ class SegregationViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = Segregation.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
-
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return Segregation.objects.none()
+        return Segregation.objects.filter(imdgamendment=active_amendment)
+    
     def list(self, request):
         """
         List all Segregations
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        segregations = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        segregations = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(segregations, request)
         serializer = SegregationSerializer(page, many=True)
@@ -1229,25 +977,7 @@ class SegregationViewSet(viewsets.ViewSet):
         code_param = request.query_params.get('code', None)
         if not code_param:
             return Response({"detail": "Missing 'code' parameter."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
-            return Response(
-                {"detail": "No effective IMDG Amendment found. Please ensure one is set as effective."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except IMDGAmendment.MultipleObjectsReturned:
-            return Response(
-                {"detail": "Server configuration error: Multiple effective IMDG Amendments found. Please contact administrator."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        base_queryset = self.get_queryset() 
-        instance = get_object_or_404(
-            base_queryset, 
-            imdgamendment=effective_amendment, 
-            code=code_param
-        )
+        instance = get_object_or_404(self.get_queryset(), code=code_param)
         serializer = SegregationSerializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def create(self, request):
@@ -1283,16 +1013,15 @@ Segregation Rule ViewSet
 class SegregationRuleViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
 
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = SegregationRule.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return SegregationRule.objects.none()
+        return SegregationRule.objects.filter(imdgamendment=active_amendment)
     
     def list(self, request):
         """List all Segregation Bars"""
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        segregation_bars = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        segregation_bars = self.get_queryset()
         serializer = SegregationRuleSerializer(segregation_bars, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     def retrieve(self, request, pk=None):
@@ -1328,18 +1057,17 @@ class DangerousGoodsViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
     pagination_class = CustomPagination
     
-    def get_queryset(self, imdg_amendment_id=None):
-        queryset = DangerousGoods.objects.all()
-        if imdg_amendment_id is not None:
-            queryset = queryset.filter(imdgamendment_id=imdg_amendment_id)
-        return queryset
+    def get_queryset(self):
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
+            return DangerousGoods.objects.none()
+        return DangerousGoods.objects.filter(imdgamendment=active_amendment)
     
     def list(self, request):
         """
         List all Dangerous Goods
         """
-        imdg_amendment_id_param = request.query_params.get('imdg_amendment_id', None)
-        dangerous_goods = self.get_queryset(imdg_amendment_id=imdg_amendment_id_param)
+        dangerous_goods = self.get_queryset()
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(dangerous_goods, request)
         serializer = DangerousGoodsSerializer(page, many=True)
@@ -1383,14 +1111,10 @@ class SearchDangerousGoodsViewSet(viewsets.ViewSet):
     pagination_class = CustomPagination
     
     def get_queryset(self):
-        try:
-            effective_amendment = IMDGAmendment.objects.get(is_effective=True)
-        except IMDGAmendment.DoesNotExist:
+        active_amendment = IMDGAmendment.objects.filter(is_effective=True).first()
+        if not active_amendment:
             return DangerousGoods.objects.none()
-        except IMDGAmendment.MultipleObjectsReturned:
-            return DangerousGoods.objects.none()
-        queryset = DangerousGoods.objects.filter(imdgamendment=effective_amendment)
-        return queryset
+        return DangerousGoods.objects.filter(imdgamendment=active_amendment)
 
     def list(self, request):
         """
