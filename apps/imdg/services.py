@@ -47,5 +47,5 @@ class IMDGLookupService:
         return {
             'package_labels': required_labels,
             'ctu_placards': required_labels,
-            'general_segregation_rules': segregation_rules
+            'segregation_rules': segregation_rules
         }

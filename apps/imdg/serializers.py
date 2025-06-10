@@ -398,15 +398,15 @@ class SegregationSerializer(serializers.ModelSerializer):
 
 class SegregationRuleSerializer(serializers.ModelSerializer):
     """Custom serializer for SegregationBar model."""
-    from_class_id = serializers.PrimaryKeyRelatedField(
+    from_class_code = serializers.SlugRelatedField(
+        slug_field='code',
         queryset=ClassDivision.objects.all(),
-        source='fromclass',
-        write_only=True
+        source='fromclass'
     )
-    to_class_id = serializers.PrimaryKeyRelatedField(
+    to_class_code = serializers.SlugRelatedField(
+        slug_field='code',
         queryset=ClassDivision.objects.all(),
-        source='toclass',
-        write_only=True
+        source='toclass'
     )
     from_class = ClassDivisionSerializer(
         read_only=True, 
@@ -419,20 +419,30 @@ class SegregationRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = SegregationRule
         fields = ['id',
-                  'from_class_id', 'from_class',
-                  'to_class_id', 'to_class',
+                  'from_class_code', 'from_class',
+                  'to_class_code', 'to_class',
                   'requirement']
         list_serializer_class = BaseListSerializer
 
     def validate(self, data):
+        from_class_instance = data.get('fromclass')
+        to_class_instance = data.get('toclass')
+        
+        lookup_service = IMDGLookupService()
+        active_amendment = lookup_service.active_amendment
+
+        if not active_amendment:
+             raise serializers.ValidationError("No active amendment found for validation.")
+        
         existing_rule = SegregationRule.objects.filter(
-            imdgamendment=data.get('imdgamendment'),
-            fromclass=data.get('fromclass'),
-            toclass=data.get('toclass')
+            imdgamendment=active_amendment,
+            fromclass=from_class_instance,
+            toclass=to_class_instance
         ).exists()
+        
         if existing_rule:
             raise serializers.ValidationError(
-                "Segregation rule for this combination already exists."
+                "Segregation rule for this combination already exists in the active amendment."
             )
         
         return data
