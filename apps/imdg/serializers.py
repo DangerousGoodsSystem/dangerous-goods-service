@@ -399,11 +399,13 @@ class SegregationSerializer(serializers.ModelSerializer):
 class SegregationRuleSerializer(serializers.ModelSerializer):
     """Custom serializer for SegregationBar model."""
     from_class_code = serializers.SlugRelatedField(
+        write_only=True,
         slug_field='code',
         queryset=ClassDivision.objects.all(),
         source='fromclass'
     )
     to_class_code = serializers.SlugRelatedField(
+        write_only=True,
         slug_field='code',
         queryset=ClassDivision.objects.all(),
         source='toclass'
@@ -427,7 +429,7 @@ class SegregationRuleSerializer(serializers.ModelSerializer):
     def validate(self, data):
         from_class_instance = data.get('fromclass')
         to_class_instance = data.get('toclass')
-        
+
         lookup_service = IMDGLookupService()
         active_amendment = lookup_service.active_amendment
 
