@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'apps.accounts',
+    'apps.customer',
     'apps.imdg',
     
 ]
@@ -231,3 +232,6 @@ AUTH_USER_MODEL='accounts.User'
 CELERY_BROKER_URL = env('CELERY_BROKER_URL')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+# Dèault customer password
+DEFAULT_CUSTOMER_PASSWORD = env('DEFAULT_CUSTOMER_PASSWORD')
