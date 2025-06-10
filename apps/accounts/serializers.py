@@ -32,8 +32,6 @@ class LoginSerializer(serializers.ModelSerializer):
             raise AuthenticationFailed('invalid credential try again')
         if not user.is_active:
             raise AuthenticationFailed('User account locked')
-        if not user.is_verified:
-            raise AuthenticationFailed('Email is not verified')
         tokens = RefreshToken.for_user(user)
         return {
             'email': user.email,
