@@ -299,11 +299,6 @@ class TankInstructionsSerializer(serializers.ModelSerializer):
 
 class TankProvisionsSerializer(serializers.ModelSerializer):
     """Custom serializer for Tank Provisions model with bulk creation support."""
-    imdg_amendment_id = serializers.PrimaryKeyRelatedField(
-        queryset=IMDGAmendment.objects.all(),
-        source='imdgamendment',
-        write_only=True
-    )
     class Meta:
         model = TankProvisions
         fields = ['id',
