@@ -137,6 +137,18 @@ class UNCodeViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all UN Codes associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No UN Codes found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
 class ClassDivisionViewSet(viewsets.ViewSet):
     permission_classes = [IsStaffUser, DjangoModelPermissionsWithView]
@@ -200,6 +212,18 @@ class ClassDivisionViewSet(viewsets.ViewSet):
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Class Divisions associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Class Divisions found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 """
@@ -268,6 +292,18 @@ class PackingGroupViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Packing Groups associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Packing Groups found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
 Special Provisions ViewSet
@@ -334,6 +370,18 @@ class SpecialProvisionsViewSet(viewsets.ViewSet):
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Special Provisions associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Special Provisions found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
@@ -402,6 +450,18 @@ class ExceptedQuantitiesViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Excepted Quantities associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Excepted Quantities found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
 Packing Instructions ViewSet
@@ -468,6 +528,18 @@ class PackingInstructionsViewSet(viewsets.ViewSet):
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Packing Instructions associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Packing Instructions found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
@@ -536,6 +608,18 @@ class PackingProvisionsViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Packing Provisions associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Packing Provisions found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
 IBC Instructions ViewSet
@@ -602,6 +686,18 @@ class IBCInstructionsViewSet(viewsets.ViewSet):
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all IBC Instructions associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No IBC Instructions found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
@@ -671,6 +767,18 @@ class IBCProvisionsViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all IBC Provisions associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No IBC Provisions found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
 Tank Instructions ViewSet
@@ -737,6 +845,18 @@ class TankInstructionsViewSet(viewsets.ViewSet):
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Tank Instructions associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Tank Instructions found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
@@ -805,6 +925,18 @@ class TankProvisionsViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Tank Provisions associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Tank Provisions found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
 Emergency Schedule ViewSet
@@ -871,6 +1003,18 @@ class EmergencySchedulesViewSet(viewsets.ViewSet):
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Emregency Schedules associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Emergency Schedules found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
@@ -939,6 +1083,18 @@ class StowageHandlingViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Stowage Handlings associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Stowage Handlings found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
 Segregation ViewSet
@@ -1006,6 +1162,18 @@ class SegregationViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Segregations associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Segregations found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
 Segregation Rule ViewSet
@@ -1048,6 +1216,18 @@ class SegregationRuleViewSet(viewsets.ViewSet):
         """Delete a Segregation Bar"""
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Segregation Rules associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Segregation Rules found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 """
@@ -1104,6 +1284,18 @@ class DangerousGoodsViewSet(viewsets.ViewSet):
         """
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=False, methods=['delete'], url_path='delete-all')
+    def delete_all(self, request):
+        """
+        Deletes all Dangerous Goods associated with the current effective IMDG Amendment.
+        This is a bulk delete operation.
+        """
+        queryset = self.get_queryset()
+        count = queryset.count()
+        if count == 0:
+            return Response({"detail": "No Dangerous Goods found for the active amendment to delete."}, status=status.HTTP_404_NOT_FOUND)
+        queryset.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class SearchDangerousGoodsViewSet(viewsets.ViewSet):
