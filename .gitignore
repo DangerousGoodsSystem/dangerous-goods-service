@@ -2,4 +2,4 @@
 .env*
 logs/
 media/
-nginx/ssl/*
+nginx/ssl/
