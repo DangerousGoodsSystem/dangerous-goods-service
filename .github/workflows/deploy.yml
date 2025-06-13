@@ -1,0 +1,129 @@
+name: CI/CD Pipeline for Dangerous Goods Service
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+
+  IMAGE_NAME: ghcr.io/skynguyen313/dangerous-goods-service 
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+
+      postgres:
+        image: postgres:16.9
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd "pg_isready -U test_user -d test_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Cache Pip dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Set up Docker Compose
+      run: docker-compose --version
+
+    - name: Run tests
+
+      run: |
+        export POSTGRES_DB=test_db
+        export POSTGRES_USER=test_user
+        export POSTGRES_PASSWORD=test_password
+        export POSTGRES_HOST=localhost
+        export POSTGRES_PORT=5432
+        docker-compose run --rm web python manage.py test
+
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    needs: test
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+
+        tags: |
+          ${{ env.IMAGE_NAME }}:latest
+          ${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    needs: build_and_push
+
+    steps:
+    - name: Deploy to server via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # Move to the project folder on the server
+          # !!! CHANGE THIS PATH to suit your server
+          cd ${{ vars.DEPLOY_PATH }}
+          
+          # Get the latest code from the main branch
+          git pull origin main
+          
+          # Log in to GitHub Container Registry on the server
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          
+          # Pull latest image from registry
+          docker-compose pull
+          
+          # Restart containers with new image
+          docker-compose up -d
+
+          # Clean up old images that are no longer in use to save space
+          docker image prune -af
+
+    - name: Send Email Notification
+      if: always()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: ${{ secrets.SMTP_SERVER }}
+        server_port: ${{ secrets.SMTP_PORT }}
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+
+        subject: "GitHub Actions: Deployment ${{ job.status }}"
+        body: "Build job in ${{ github.repository }} has ${{ job.status }}."
+        to: "skynguyen313@gmail.com"
+        from: CI/CD Bot Dangerous Goods Service<skynguyen313@gmail.com>
