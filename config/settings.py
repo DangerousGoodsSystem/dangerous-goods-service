@@ -177,7 +177,7 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
-            'level': 'DEBUG',
+            'level': 'ERROR',
         },
         'file': {
             'class': 'logging.handlers.RotatingFileHandler',
@@ -190,7 +190,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
-            'level': 'INFO',
+            'level': 'ERROR',
             'propagate': True,
         },
 
