@@ -12,3 +12,20 @@ pillow==11.1.0
 psycopg2-binary==2.9.10
 PyMuPDF==1.26.0
 whitenoise==6.9.0
+
+# Chatbot
+faiss-cpu==1.11.0
+langchain-community==0.3.24
+langchain-core==0.3.63
+langchain-experimental==0.3.4
+langchain-openai==0.3.18
+langchain-pymupdf4llm==0.4.1
+langchain-ollama==0.3.3
+langgraph==0.4.7
+langserve[all]==0.3.1
+pydantic==2.11.5
+python-multipart==0.0.20
+pyvi==0.1.1
+typing-extensions==4.14.0
+pymupdf4llm==0.0.24
+drf-spectacular==0.28.0

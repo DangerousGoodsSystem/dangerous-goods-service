@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'apps.accounts',
+    'apps.chatbot',
     'apps.customer',
     'apps.imdg',
     
@@ -245,3 +246,6 @@ EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_SENDER_NAME = env('EMAIL_SENDER_NAME', default='')
+
+# OPENAI API KEY
+OPENAI_API_KEY= env('OPENAI_API_KEY')
