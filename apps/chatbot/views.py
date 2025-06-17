@@ -9,12 +9,12 @@ from .models import Conversation, Message
 from .serializers import ChatRequestSerializer, ChatResponseSerializer, ConversationSerializer, MessageSerializer
 from .tasks import save_chat_history
 
-chatbot = apps.get_app_config('apps.chatbot').chatbot
+chatbot = apps.get_app_config('chatbot').chatbot
 
 class ChatViewSet(viewsets.ViewSet):
     permission_classes = [IsUser]
 
-    def post(self, request):
+    def create(self, request):
         request_serializer = ChatRequestSerializer(data=request.data)
         if request_serializer.is_valid():
             thread_id = request_serializer.validated_data['thread_id']
@@ -49,7 +49,6 @@ class ChatViewSet(viewsets.ViewSet):
             if response_serializer.is_valid():
                 return Response(response_serializer.data, status=status.HTTP_200_OK)
             else:
-                print(response_serializer.errors)
                 return Response(response_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response(request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
