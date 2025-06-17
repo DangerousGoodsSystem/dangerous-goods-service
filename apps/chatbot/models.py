@@ -16,6 +16,7 @@ class Conversation(models.Model):
         db_table = 'chatbot.conversation'
 
 class Message(models.Model):
+    id = models.BigAutoField(primary_key=True)
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
     content = models.TextField()
     is_user = models.BooleanField()

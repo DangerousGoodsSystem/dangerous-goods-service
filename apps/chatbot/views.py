@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from .permissions import IsUser, IsStaffUser, DjangoModelPermissionsWithView
 from .pagination import CustomPagination
 from .models import Conversation, Message
-from .serializers import ChatRequestSerializer, ChatResponseSerializer, ConversationSerializer, MessageSerializer
+from .serializers import ChatRequestSerializer, ChatResponseSerializer, ConversationSerializer, ConversationListSerializer
 from .tasks import save_chat_history
 
 chatbot = apps.get_app_config('chatbot').chatbot
@@ -76,7 +76,6 @@ class ConversationViewSet(viewsets.ViewSet):
 
 class MyConversationViewSet(viewsets.ViewSet):
     permission_classes = [IsUser]
-    serializer_class = ConversationSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -96,14 +95,13 @@ class MyConversationViewSet(viewsets.ViewSet):
     
     def list(self, request):
         queryset = self.get_queryset()
-        serializer = self.serializer_class(queryset, many=True)
+        serializer = ConversationListSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def retrieve(self, request, pk=None):
         queryset = self.get_queryset()
         conversation = get_object_or_404(queryset, pk=pk)
-        serializer_class = self.get_serializer_class()
-        serializer = serializer_class(conversation) 
+        serializer = ConversationSerializer(conversation)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def destroy(self, request, pk=None):
