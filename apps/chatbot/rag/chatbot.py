@@ -13,7 +13,7 @@ import os
 class Chatbot:
     def __init__(self):
         self.llm = get_openai_llm()
-        self.local_llm = get_local_llm()
+        # self.local_llm = get_local_llm()
         
         self.vector_db = VectorDB() 
         
@@ -39,7 +39,7 @@ class Chatbot:
     def _initialize_retrieval(self):
         self.retriever = self.vector_db.get_retriever()
         self.contextual_retriever = ContextualRetriever(self.llm, self.retriever).get_history_aware_retriever()
-        self.qa_chain = QuestionAnsweringChain(self.local_llm).create_qa_chain()
+        self.qa_chain = QuestionAnsweringChain(self.llm).create_qa_chain()
         self.rag_chain = create_retrieval_chain(self.contextual_retriever, self.qa_chain)
 
     def is_retrieval_ready(self):
@@ -60,7 +60,7 @@ class Chatbot:
             }
         else:
             # chưa test case này
-            response = self.local_llm.invoke(question)
+            response = self.llm.invoke(question)
             answer = response.content if hasattr(response, 'content') else str(response)
             return {
                 "chat_history": [
