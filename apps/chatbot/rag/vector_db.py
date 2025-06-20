@@ -1,20 +1,27 @@
 import os
 from django.conf import settings
+from langchain.callbacks.manager import CallbackManagerForRetrieverRun
 from langchain.retrievers import EnsembleRetriever
 from langchain_community.vectorstores import FAISS
 from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain_core.documents import Document
+from langchain_core.retrievers import BaseRetriever
 from langchain.retrievers.document_compressors import FlashrankRerank
 from langchain.retrievers import ContextualCompressionRetriever
 from dotenv import load_dotenv
+from typing import List
 
 load_dotenv()
 
+from rerankers import Reranker
+from rerankers import Document as RerankerDocument
 
-api_key = settings.OPENAI_API_KEY
+# api_key = settings.OPENAI_API_KEY
+api_key = "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"
 
-filename = "vector_store/indexes"
-vector_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+# filename = "vector_store/indexes"
+vector_db_path = "/mnt/d/Workspace/Dangerous_Good_List/DGL_backend_full/dangerous-goods-service/apps/chatbot/rag/vector_store/indexes"
+# vector_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
 class VectorDB:
@@ -25,7 +32,12 @@ class VectorDB:
         self.vector_db = vector_db
         self.embedding = embedding
         self.db = self._load_or_initialize_db()
-        # self.compresor = FlashrankRerank(top_n=6)
+        try:
+            self.reranker = Reranker('gpt-4o', model_type="rankllm", api_key=api_key)
+            print("[DEBUG] Đã khởi tạo reranker thành công")
+        except Exception as e:
+            print(f"[WARNING] Không thể khởi tạo reranker: {e}")
+            self.reranker = None
 
     def _initialize_index(self):
         empty_content = " "
@@ -59,9 +71,202 @@ class VectorDB:
 
         return db
 
-    def get_retriever(self):
-        retriever = self.db.as_retriever(
+    def add_data(self, new_documents):
+        if not new_documents:
+            return False
+        
+        # Chia thành batch 5 documents mỗi lần
+        batch_size = 5
+        total_docs = len(new_documents)
+        
+        for i in range(0, total_docs, batch_size):
+            batch = new_documents[i:i + batch_size]
+            try:
+                self.db.add_documents(documents=batch)
+                print(f"[DEBUG] Đã thêm batch {i//batch_size + 1}: {len(batch)} documents")
+            except Exception as e:
+                print(f"[ERROR] Lỗi khi thêm batch {i//batch_size + 1}: {e}")
+                return False
+        
+        # Save sau khi thêm tất cả batch
+        self.db.save_local(vector_db_path)
+        print(f"[DEBUG] Hoàn thành thêm {total_docs} documents vào vector store")
+        return True
+    
+    def get_retriever(self,
+                      search_kwargs: dict = {"k": 10},
+                      weights: List[float] = [0.6, 0.4]):
+    
+        faiss_retriever = self.db.as_retriever(
             search_type="similarity",
-            search_kwargs={"k": 5}
+            search_kwargs=search_kwargs
         )
-        return retriever
+        
+        mmr_retriever = self.db.as_retriever(
+            search_type="mmr",
+            search_kwargs=search_kwargs
+        )
+        
+        ensemble_retriever = EnsembleRetriever(
+            retrievers=[faiss_retriever, mmr_retriever],
+            weights=weights
+        )
+        return ensemble_retriever
+
+    def get_compressed_retriever(self, search_kwargs: dict = {"k": 15}):
+        # Tạo base retriever
+        base_retriever = self.get_context_enriched_retriever(k=search_kwargs.get("k", 10))
+        
+        # Tạo compressor từ reranker
+        compressor = self.reranker.as_langchain_compressor(k=5)
+        
+        # Tạo compressed retriever
+        compressed_retriever = ContextualCompressionRetriever(
+            base_compressor=compressor,
+            base_retriever=base_retriever
+        )
+        return compressed_retriever
+        
+    def context_enriched_search(self, query: str, k: int = 15, context_size: int = 1):
+        """
+        Tìm kiếm với context enriched - đơn giản
+        
+        Args:
+            query: Câu hỏi tìm kiếm
+            k: Số chunks chính cần lấy
+            context_size: Số chunks lân cận mỗi bên
+        """
+        # Tìm kiếm cơ bản trước
+        retriever = self.get_retriever(search_kwargs={"k": k})
+        docs = retriever.invoke(query)
+        
+        if not docs:
+            return []
+        
+        enriched_docs = []
+        
+        for doc in docs:
+            # Lấy thông tin chunk hiện tại
+            chunk_index = doc.metadata.get('chunk_index', 0)
+            source = doc.metadata.get('source', '')
+            
+            # Tìm các chunks lân cận
+            context_docs = self._get_neighbor_chunks(source, chunk_index, context_size)
+            
+            if context_docs:
+                # Tạo enriched content từ các chunks lân cận
+                enriched_content = self._combine_chunks(context_docs, chunk_index)
+                
+                # Tạo document mới với enriched content
+                enriched_doc = Document(
+                    page_content=enriched_content,
+                    metadata={
+                        **doc.metadata,
+                        "enriched": True,
+                        "context_chunks": len(context_docs)
+                    }
+                )
+                enriched_docs.append(enriched_doc)
+            else:
+                # Nếu không tìm thấy neighbors, giữ nguyên
+                enriched_docs.append(doc)
+        
+        return enriched_docs
+    
+    def _get_neighbor_chunks(self, source: str, chunk_index: int, context_size: int):
+        """Tìm các chunks lân cận"""        
+        # Query để tìm chunks cùng source (trick đơn giản)
+        try:
+            # Tìm kiếm với source name
+            source_docs = self.db.similarity_search(f"source:{source}", k=50)
+            
+            # Filter theo source thật sự và sort theo chunk_index
+            same_source_docs = []
+            for doc in source_docs:
+                if doc.metadata.get('source') == source:
+                    same_source_docs.append(doc)
+            
+            # Sort theo chunk_index
+            same_source_docs.sort(key=lambda x: x.metadata.get('chunk_index', 0))
+            
+            # Tìm vị trí của chunk hiện tại
+            current_pos = -1
+            for i, doc in enumerate(same_source_docs):
+                if doc.metadata.get('chunk_index') == chunk_index:
+                    current_pos = i
+                    break
+            
+            if current_pos >= 0:
+                # Lấy context chunks
+                start = max(0, current_pos - context_size)
+                end = min(len(same_source_docs), current_pos + context_size + 1)
+                return same_source_docs[start:end]
+                
+        except Exception as e:
+            print(f"[DEBUG] Lỗi khi tìm neighbor chunks: {e}")
+            
+        return []
+    
+    def _combine_chunks(self, chunks: List[Document], main_chunk_index: int):
+        """Kết hợp các chunks thành content enriched"""
+        combined_parts = []
+        
+        for chunk in chunks:
+            current_index = chunk.metadata.get('chunk_index', 0)
+            
+            if current_index == main_chunk_index:
+                # Chunk chính
+                combined_parts.append(f"[NỘI DUNG CHÍNH]:\n{chunk.page_content}")
+            elif current_index < main_chunk_index:
+                # Context trước
+                combined_parts.append(f"[CONTEXT TRƯỚC]:\n{chunk.page_content}")
+            else:
+                # Context sau
+                combined_parts.append(f"[CONTEXT SAU]:\n{chunk.page_content}")
+        
+        return "\n\n".join(combined_parts)
+    
+    def get_context_enriched_retriever(self, k: int = 5, context_size: int = 1):
+        """Tạo retriever với context enriched đơn giản"""
+        
+        # Capture vector_db trong closure
+        vector_db_instance = self
+        
+        class SimpleContextRetriever(BaseRetriever):
+            """Context Enriched Retriever"""
+            
+            def _get_relevant_documents(
+                self, 
+                query: str, 
+                *, 
+                run_manager: CallbackManagerForRetrieverRun = None
+            ) -> List[Document]:
+                return vector_db_instance.context_enriched_search(query, k, context_size)
+        
+        return SimpleContextRetriever()
+    def pretty_print_docs_langchain(self, docs):
+        print(
+            f"\n{'-' * 100}\n".join(
+                [
+                    f"Document {i+1}:\n\n{d.page_content}"
+                    for i, d in enumerate(docs)
+                ]
+            )
+        )
+if __name__ == "__main__":
+    from llm import get_openai_llm
+    from file_loader import Loader
+    llm = get_openai_llm()
+    pdf_file = "/mnt/d/Workspace/Dangerous_Good_List/langchain_chatbot/data/Part3.2_DGL.pdf"
+    vector_db = VectorDB()
+    
+    # add data
+    loader = Loader()
+    chunks= loader.load_single_file(pdf_file)
+    vector_db.add_data(chunks)
+
+    input = "What is UN 3560"
+    print(input)
+    compressed_retriever = vector_db.get_compressed_retriever()
+    reranked_docs = compressed_retriever.invoke(input)
+    vector_db.pretty_print_docs_langchain(reranked_docs)

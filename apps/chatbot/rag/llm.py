@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-api_key = settings.OPENAI_API_KEY
+# api_key = settings.OPENAI_API_KEY
+api_key = "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"
+
 
 def get_openai_llm(model_name: str = "gpt-4o",
                    max_tokens=528,
