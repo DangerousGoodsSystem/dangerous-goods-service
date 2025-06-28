@@ -1,9 +1,6 @@
 from django.conf import settings
 from langchain_openai import ChatOpenAI
 from langchain_ollama import ChatOllama
-from dotenv import load_dotenv
-
-load_dotenv()
 
 api_key = settings.OPENAI_API_KEY
 
@@ -23,12 +20,3 @@ def get_local_llm(max_tokens=528,
                      temperature = temp,
                      num_predict = max_tokens)
     return llm
-
-if __name__ == "__main__":
-    llm = get_local_llm()
-    messages = [
-                ("system", "You are an expert assistant specializing in the International Maritime Dangerous Goods (IMDG) Code. Your primary function is to answer user questions about the IMDG Code using the provided context."),
-                ("human", "What is the IMDG Code?")]
-    for chunk in llm.stream(messages):
-        print(chunk.text(), end="")
-    # print(rs.content)

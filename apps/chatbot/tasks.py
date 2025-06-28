@@ -8,14 +8,12 @@ def save_chat_history(user_id, thread_id, user_message, bot_response, relevant_d
         thread_id=thread_id
     )
     
-    # Lưu tin nhắn của người dùng
     Message.objects.create(
         conversation=conversation,
         content=user_message,
         is_user=True 
     )
 
-    # Lưu tin nhắn của bot
     Message.objects.create(
         conversation=conversation,
         content=bot_response,
