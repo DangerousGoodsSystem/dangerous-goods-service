@@ -17,11 +17,10 @@ from rerankers import Reranker
 from rerankers import Document as RerankerDocument
 
 # api_key = settings.OPENAI_API_KEY
-api_key = "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"
-
-# filename = "vector_store/indexes"
+api_key = "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"
+# vector_db_path = os.path.join(settings.BASE_DIR, "apps", "chatbot", "rag", "vector_store", "indexes")
 vector_db_path = "/mnt/d/Workspace/Dangerous_Good_List/DGL_backend_full/dangerous-goods-service/apps/chatbot/rag/vector_store/indexes"
-# vector_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
+
 
 
 class VectorDB:
@@ -32,12 +31,7 @@ class VectorDB:
         self.vector_db = vector_db
         self.embedding = embedding
         self.db = self._load_or_initialize_db()
-        try:
-            self.reranker = Reranker('gpt-4o', model_type="rankllm", api_key=api_key)
-            print("[DEBUG] Đã khởi tạo reranker thành công")
-        except Exception as e:
-            print(f"[WARNING] Không thể khởi tạo reranker: {e}")
-            self.reranker = None
+        self.reranker = Reranker('gpt-4o', model_type="rankllm", api_key=api_key)
 
     def _initialize_index(self):
         empty_content = " "
@@ -95,7 +89,7 @@ class VectorDB:
     
     def get_retriever(self,
                       search_kwargs: dict = {"k": 10},
-                      weights: List[float] = [0.6, 0.4]):
+                      weights: List[float] = [0.8, 0.2]):
     
         faiss_retriever = self.db.as_retriever(
             search_type="similarity",
@@ -113,9 +107,9 @@ class VectorDB:
         )
         return ensemble_retriever
 
-    def get_compressed_retriever(self, search_kwargs: dict = {"k": 15}):
+    def get_compressed_retriever(self, search_kwargs: dict = {"k": 5}):
         # Tạo base retriever
-        base_retriever = self.get_context_enriched_retriever(k=search_kwargs.get("k", 10))
+        base_retriever = self.get_context_enriched_retriever(k=search_kwargs.get("k", 5))
         
         # Tạo compressor từ reranker
         compressor = self.reranker.as_langchain_compressor(k=5)
@@ -127,7 +121,7 @@ class VectorDB:
         )
         return compressed_retriever
         
-    def context_enriched_search(self, query: str, k: int = 15, context_size: int = 1):
+    def context_enriched_search(self, query: str, k: int = 5, context_size: int = 1):
         """
         Tìm kiếm với context enriched - đơn giản
         
@@ -254,18 +248,18 @@ class VectorDB:
             )
         )
 if __name__ == "__main__":
-    from llm import get_openai_llm
-    from file_loader import Loader
-    llm = get_openai_llm()
-    pdf_file = "/mnt/d/Workspace/Dangerous_Good_List/langchain_chatbot/data/Part3.2_DGL.pdf"
+    # from llm import get_openai_llm
+    # from apps.chatbot.rag.file_loader import Loader
+    
+    # pdf_file = "/mnt/d/Workspace/Dangerous_Good_List/DGL_backend_full/dangerous-goods-service/output"
     vector_db = VectorDB()
     
     # add data
-    loader = Loader()
-    chunks= loader.load_single_file(pdf_file)
-    vector_db.add_data(chunks)
+    # loader = Loader()
+    # chunks= loader.load_dir(pdf_file)
+    # vector_db.add_data(chunks)
 
-    input = "What is UN 3560"
+    input = "what is P200"
     print(input)
     compressed_retriever = vector_db.get_compressed_retriever()
     reranked_docs = compressed_retriever.invoke(input)

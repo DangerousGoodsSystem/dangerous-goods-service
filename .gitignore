@@ -3,3 +3,8 @@
 logs/
 media/
 nginx/ssl/
+IMDG/
+data/
+output/
+apps/chatbot/rag/evaluation/
+pdfplumber.ipynb

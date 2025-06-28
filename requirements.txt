@@ -31,3 +31,4 @@ pymupdf4llm==0.0.24
 drf-spectacular==0.28.0
 chonkie==1.0.10
 rerankers==0.10.0
+rerankers[rankllm]

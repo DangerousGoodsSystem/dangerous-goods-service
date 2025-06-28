@@ -15,7 +15,8 @@ from pathlib import Path
 
 load_dotenv()
 
-api_key = os.getenv("OPENAIAPI_KEY")
+# api_key = os.getenv("OPENAIAPI_KEY")
+api_key = "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"
 
 DEFAULT_CHUNK_SIZE = 800
 DEFAULT_CHUNK_OVERLAP = 200
@@ -58,13 +59,13 @@ class PDFLoader(BaseLoader):
         return documents
 
 class TextSplitter:
-    def __init__(self, embedding=OpenAIEmbeddings(api_key="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",
+    def __init__(self, embedding=OpenAIEmbeddings(api_key=api_key,
                                             model="text-embedding-3-large")):
         self.chunker = SDPMChunker(embedding_model=embedding,  
                                    threshold=0.5,
-                                   chunk_size=1024,
+                                   chunk_size=512,
                                    min_sentences=2,
-                                   skip_window=1)
+                                   skip_window=2)
     def __call__(self, documents):  
         all_chunks = []
         for doc in documents:
@@ -233,7 +234,7 @@ if __name__ == "__main__":
     loader = Loader()
     
     # Thông tin về thư mục
-    data_path = "/mnt/d/Workspace/Dangerous_Good_List/langchain_chatbot/data/Part3.2_DGL.pdf"
+    data_path = "/mnt/d/Workspace/Dangerous_Good_List/DGL_backend_full/dangerous-goods-service/output"
     file_info = loader.get_file_info(data_path)
     print("=== THÔNG TIN THU MỤC ===")
     print(f"Tổng số file: {file_info['total_files']}")
@@ -242,11 +243,11 @@ if __name__ == "__main__":
     
     # Load tất cả file trong thư mục với 2 workers
     print("\n=== BẮT ĐẦU LOAD HÀNG LOẠT ===")
-    chunks = loader.load_single_file(data_path)
+    chunks = loader.load_dir(data_path)
     print(f"\nKẾT QUẢ CUỐI CÙNG: {len(chunks)} chunks tổng cộng")
     
     # Lưu kết quả
-    output_file = "/mnt/d/Workspace/Dangerous_Good_List/langchain_chatbot/output/output_chunks_DGL.txt"
+    output_file = "/mnt/d/Workspace/Dangerous_Good_List/DGL_backend_full/dangerous-goods-service/output/chunks.txt"
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(f"=== TỔNG KẾT ===\n")
         f.write(f"Số lượng chunks: {len(chunks)}\n")
