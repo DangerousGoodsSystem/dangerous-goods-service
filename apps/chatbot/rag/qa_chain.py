@@ -6,26 +6,11 @@ from typing import Dict, Any
 from .llm import get_openai_llm
 
 class QuestionAnsweringChain:
-    """
-    A chain for answering questions based on the provided 'context' and 'chat_history'.
-    """
 
     def __init__(self, llm):
-        """
-        Initialize the QuestionAnsweringChain.
-        
-        Args:
-            llm: Language model
-        """
         self.llm = llm
 
     def create_qa_chain(self):
-        """
-        Create a QA chain.
-        
-        Returns:
-            Chain for answering questions
-        """
         prompt = self._create_chat_prompt_template()
         
 
@@ -51,7 +36,8 @@ class QuestionAnsweringChain:
         system_prompt = """
             # DIRECTIVE
             Your single objective is to provide accurate and helpful answers to users' questions *exclusively* about the IMDG Code. You must use the contextual information provided below to generate your response.
- PERSONA DEFINITION
+
+            # PERSONA DEFINITION
             You are an AI assistant designed to function as a specialized query engine for the International Maritime Dangerous Goods (IMDG) Code. Your persona is that of a precise and helpful domain expert.
 
             # CORE
@@ -110,43 +96,4 @@ class QuestionAnsweringChain:
 #             MessagesPlaceholder("chat_history"),
 #             ("human", "{input}")
 #         ])
-    
-def main_with_real_llm():
-    """
-    Test với LLM thật (cần cài đặt dependencies)
-    """
-    try:
-        llm = get_openai_llm()
-        
-    except ImportError:
-        print("❌ Không tìm thấy LLM library")
-    
-    print("🚀 Testing với LLM thật...")
-    
-    qa_chain = QuestionAnsweringChain(llm)
-    
-    # Test case thật
-    test_input = {
-            "context": "IMDG Code là bộ quy tắc quốc tế về vận chuyển hàng nguy hiểm đường biển. Nó được phát triển bởi IMO (International Maritime Organization).",
-            "chat_history": "",
-            "input": "IMDG Code là gì?"
-        }
-    
-    try:
-        chain = qa_chain.create_qa_chain()
-        result = chain.invoke(test_input)
-        
-        print("📋 INPUT:")
-        print(f"   Question: {test_input['input']}")
-        print("\n🤖 AI RESPONSE:")
-        print(f"   {result}")
-        
-    except Exception as e:
-        print(f"❌ Error: {str(e)}")
-
-
-# Thêm vào cuối if __name__ == "__main__":
-if __name__ == "__main__":
-    main_with_real_llm()
-   
-    
+ 

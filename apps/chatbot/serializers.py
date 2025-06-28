@@ -7,7 +7,6 @@ class ChunksRelevantSerializer(serializers.Serializer):
     page_content = serializers.CharField(allow_blank=True)
 
 class ChatRequestSerializer(serializers.Serializer):
-    """Serializer cho request chat"""
     thread_id = serializers.CharField(required=True)
     message = serializers.CharField(max_length=2000)
     
@@ -17,7 +16,6 @@ class ChatRequestSerializer(serializers.Serializer):
         return value.strip()
 
 class ChatResponseSerializer(serializers.Serializer):
-    """Serializer cho response chat"""
     response = serializers.CharField()
     context = ChunksRelevantSerializer(many=True, required=False)
 

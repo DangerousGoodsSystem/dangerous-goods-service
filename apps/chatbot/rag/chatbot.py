@@ -11,7 +11,7 @@ from .standardize import preprocess_text
 
 class Chatbot:
     def __init__(self):
-        self.llm = get_openai_llm(model_name="gpt-4.1")
+        self.llm = get_openai_llm(model_name="gpt-4.1", max_tokens=300)
         # self.local_llm = get_local_llm()     
         self.vector_db = VectorDB() 
         self.retriever = self.vector_db.get_compressed_retriever(search_kwargs={"k": 6})  
@@ -54,38 +54,3 @@ class Chatbot:
         result = self.app.invoke(state, config=config)
         
         return {"answer": result["answer"], "documents": result["context"]}
-
-if __name__ == "__main__":
-    # Khởi tạo chatbot
-    chatbot = Chatbot()
-    
-    # Thiết lập workflow
-    app = chatbot.setup_workflow()
-    
-    # Cấu hình cho session
-    config = {"configurable": {"thread_id": "test_session_1"}}
-    
-    print("Chatbot đã sẵn sàng! Gõ 'quit' để thoát.\n")
-    
-    while True:
-        # Nhập câu hỏi từ người dùng
-        question = input("Bạn: ")
-        
-        # Kiểm tra điều kiện thoát
-        if question.lower() in ['exit', 'quit', 'thoát']:
-            print("Tạm biệt!")
-            break
-            
-        if question.strip() == "":
-            continue
-            
-        try:
-            # Gọi chatbot để trả lời
-            print("Bot đang suy nghĩ...")
-            answer = chatbot.ask(question, config)
-            print(f"Bot: {answer}\n")
-            
-        except Exception as e:
-            print(f"Lỗi: {e}\n")
-            import traceback
-            print(traceback.format_exc())
