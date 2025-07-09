@@ -31,7 +31,7 @@ class ConversationSerializer(serializers.ModelSerializer):
         fields = ['id', 'thread_id', 'user_id', 'created_at', 'messages']
 
 class ConversationListSerializer(serializers.ModelSerializer):
-    first_user_message = serializers.CharField(source='first_user_message', read_only=True)
+    first_user_message = serializers.CharField(read_only=True)
     class Meta:
         model = Conversation
         fields = ['id', 'first_user_message', 'created_at']
