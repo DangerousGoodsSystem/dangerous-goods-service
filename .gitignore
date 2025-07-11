@@ -3,3 +3,5 @@
 logs/
 media/
 nginx/ssl/
+staticfiles/
+backup*
