@@ -42,13 +42,8 @@ jobs:
     - name: Check Docker Compose version
       run: docker compose version
 
-    - name: Create .env file for testing
-      run: |
-        echo "POSTGRES_DB=test_db" >> .env
-        echo "POSTGRES_USER=test_user" >> .env
-        echo "POSTGRES_PASSWORD=test_password" >> .env
-        echo "POSTGRES_HOST=localhost" >> .env
-        echo "POSTGRES_PORT=5432" >> .env
+    - name: Use CI .env file
+      run: cp .env.ci .env
 
     - name: Build Docker containers
       run: docker compose -f docker-compose.yml -f docker-compose.ci.yml build
@@ -93,22 +88,11 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          # Move to the project folder on the server
           cd ${{ vars.DEPLOY_PATH }}
-          
-          # Pull latest code from main branch
           git pull origin main
-          
-          # Log in to GitHub Container Registry
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          
-          # Pull latest image
           docker compose pull
-          
-          # Restart containers
           docker compose up -d
-
-          # Clean up unused images
           docker image prune -af
 
     - name: Send Email Notification
@@ -122,4 +106,4 @@ jobs:
         subject: "GitHub Actions: Deployment ${{ job.status }}"
         body: "Build job in ${{ github.repository }} has ${{ job.status }}."
         to: "skynguyen313@gmail.com"
-        from: CI/CD Bot Dangerous Goods Service<skynguyen313@gmail.com>
+        from: CI/CD Bot Dangerous Goods Service <skynguyen313@gmail.com>
