@@ -51,10 +51,10 @@ jobs:
         echo "POSTGRES_PORT=5432" >> .env
 
     - name: Build Docker containers
-      run: docker compose build
+      run: docker compose -f docker-compose.yml -f docker-compose.ci.yml build
 
     - name: Run Django tests
-      run: docker compose run --rm web python manage.py test
+      run: docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm web python manage.py test
 
   build_and_push:
     runs-on: ubuntu-latest
