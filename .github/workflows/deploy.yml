@@ -42,15 +42,14 @@ jobs:
     - name: Check Docker Compose version
       run: docker compose version
 
-    - name: Run tests
+    - name: Use CI .env file
+      run: cp .env.ci .env
 
-      run: |
-        export POSTGRES_DB=test_db
-        export POSTGRES_USER=test_user
-        export POSTGRES_PASSWORD=test_password
-        export POSTGRES_HOST=localhost
-        export POSTGRES_PORT=5432
-        docker compose run --rm web python manage.py test
+    - name: Build Docker containers
+      run: docker compose -f docker-compose.yml -f docker-compose.ci.yml build
+
+    - name: Run Django tests
+      run: docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm web python manage.py test
 
   build_and_push:
     runs-on: ubuntu-latest
@@ -89,23 +88,11 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          # Move to the project folder on the server
-          # !!! CHANGE THIS PATH to suit your server
           cd ${{ vars.DEPLOY_PATH }}
-          
-          # Get the latest code from the main branch
           git pull origin main
-          
-          # Log in to GitHub Container Registry on the server
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          
-          # Pull latest image from registry
           docker compose pull
-          
-          # Restart containers with new image
           docker compose up -d
-
-          # Clean up old images that are no longer in use to save space
           docker image prune -af
 
     - name: Send Email Notification
@@ -119,4 +106,4 @@ jobs:
         subject: "GitHub Actions: Deployment ${{ job.status }}"
         body: "Build job in ${{ github.repository }} has ${{ job.status }}."
         to: "skynguyen313@gmail.com"
-        from: CI/CD Bot Dangerous Goods Service<skynguyen313@gmail.com>
+        from: CI/CD Bot Dangerous Goods Service <skynguyen313@gmail.com>
