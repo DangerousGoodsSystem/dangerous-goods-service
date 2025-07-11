@@ -42,19 +42,15 @@ jobs:
     - name: Check Docker Compose version
       run: docker compose version
 
-    - name: Create .env file for testing
+    - name: Run tests
+
       run: |
-        echo "POSTGRES_DB=test_db" >> .env
-        echo "POSTGRES_USER=test_user" >> .env
-        echo "POSTGRES_PASSWORD=test_password" >> .env
-        echo "POSTGRES_HOST=localhost" >> .env
-        echo "POSTGRES_PORT=5432" >> .env
-
-    - name: Build Docker containers
-      run: docker compose -f docker-compose.yml -f docker-compose.ci.yml build
-
-    - name: Run Django tests
-      run: docker compose -f docker-compose.yml -f docker-compose.ci.yml run --rm web python manage.py test
+        export POSTGRES_DB=test_db
+        export POSTGRES_USER=test_user
+        export POSTGRES_PASSWORD=test_password
+        export POSTGRES_HOST=localhost
+        export POSTGRES_PORT=5432
+        docker compose run --rm web python manage.py test
 
   build_and_push:
     runs-on: ubuntu-latest
@@ -94,21 +90,22 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           # Move to the project folder on the server
+          # !!! CHANGE THIS PATH to suit your server
           cd ${{ vars.DEPLOY_PATH }}
           
-          # Pull latest code from main branch
+          # Get the latest code from the main branch
           git pull origin main
           
-          # Log in to GitHub Container Registry
+          # Log in to GitHub Container Registry on the server
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           
-          # Pull latest image
+          # Pull latest image from registry
           docker compose pull
           
-          # Restart containers
+          # Restart containers with new image
           docker compose up -d
 
-          # Clean up unused images
+          # Clean up old images that are no longer in use to save space
           docker image prune -af
 
     - name: Send Email Notification
