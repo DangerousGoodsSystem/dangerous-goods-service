@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - .:/app/dangerous_goods_service
+      - .:/app
     env_file:
       - .env
     restart: unless-stopped
@@ -33,7 +33,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: ["bash", "-c", "PYTHONPATH=/app/dangerous_goods_service celery -A config.celery worker --loglevel=info"]
+    command: ["bash", "-c", "PYTHONPATH=/app celery -A config.celery worker --loglevel=info"]
 
   redis:
     image: redis:7.4
