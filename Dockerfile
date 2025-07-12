@@ -12,13 +12,13 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app/dangerous_goods
+WORKDIR /app
 
 COPY requirements.txt ./requirements.txt
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-COPY . /app/dangerous_goods/
+COPY . .
 
 EXPOSE 8000
 
